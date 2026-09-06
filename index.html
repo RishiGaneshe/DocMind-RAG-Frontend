@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>DocMind — Ask your documents anything</title>
+    <meta
+      name="description"
+      content="DocMind turns your PDFs into an answerable knowledge base. Upload documents, ask questions in plain language, and get streamed answers that cite the exact chunk they came from."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0A0D0F" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DocMind" />
+    <meta property="og:title" content="DocMind — Ask your documents anything" />
+    <meta
+      property="og:description"
+      content="Multi-tenant retrieval-augmented generation. Upload PDFs, ask questions, get answers that cite their sources."
+    />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script>
+      // Resolve the theme before first paint so there is no flash of the wrong
+      // theme when React mounts (plan §15.2). Dark is the default experience.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('docmind.theme')
+          var resolved =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.dataset.theme = resolved
+        } catch (_) {
+          document.documentElement.dataset.theme = 'dark'
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

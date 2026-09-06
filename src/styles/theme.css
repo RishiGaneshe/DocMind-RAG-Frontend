@@ -1,0 +1,269 @@
+/* ---------------------------------------------------------------------------
+ * DocMind design tokens — the single source of truth (plan §15).
+ *
+ * Tailwind v4's `@theme` emits every entry as a real CSS custom property, so
+ * these are inspectable in DevTools and re-themeable at runtime without a
+ * rebuild. Primitives live here; the light/dark *semantic* layer lives in
+ * base.css and is bridged back into Tailwind utilities by the `@theme inline`
+ * block at the bottom of this file.
+ *
+ * Rule enforced by review, not by tooling: nothing under features/ or
+ * components/ may reference a primitive ramp (ink-N or sky-N) directly. Use the
+ * semantic utilities — bg-surface, text-fg-muted, border-line, bg-accent.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* Ink — surfaces and text. Gunmetal #35393C is ink-600, the source colour.
+     Contrast ratios are measured against --color-ink-950. */
+  --color-ink-950: #0a0d0f; /* app background                             */
+  --color-ink-900: #0f1418; /* sidebar, marketing sections                */
+  --color-ink-850: #141a1f; /* cards, auth card base                      */
+  --color-ink-800: #1d242a; /* elevated cards, inputs, user bubble        */
+  --color-ink-700: #252e35; /* borders, dividers                          */
+  --color-ink-600: #35393c; /* GUNMETAL — strong borders, disabled fills  */
+  --color-ink-500: #4a545c; /* inactive icons                             */
+  --color-ink-400: #6b757e; /*  4.15:1 — decorative + disabled text ONLY  */
+  --color-ink-350: #7c8792; /*  5.33:1 — muted text (AA)                  */
+  --color-ink-200: #b4bec7; /* 10.30:1 — secondary text                   */
+  --color-ink-50: #edf1f5; /* 17.20:1 — primary text                      */
+
+  /* Sky — the accent. Icy Blue #A4D8FF is sky-200, the source colour. */
+  --color-sky-100: #d6ecff; /* hover-lighten on the CTA                   */
+  --color-sky-200: #a4d8ff; /* ICY BLUE — 12.85:1 — the brand colour      */
+  --color-sky-300: #7cc2f5; /* pressed CTA, secondary accent              */
+  --color-sky-400: #4fa8e8; /* charts, progress fills                     */
+  --color-sky-500: #2489d4; /* mid — gradients                            */
+  --color-sky-600: #0a6ebf; /* LIGHT-MODE primary (white text = 5.26:1)   */
+  --color-sky-700: #0a578f; /* light-mode pressed                         */
+
+  /* Drop the Tailwind default `sky` steps we do not define, so no utility can
+     silently pull a colour from outside the hue-206 ramp. */
+  --color-sky-50: initial;
+  --color-sky-800: initial;
+  --color-sky-900: initial;
+  --color-sky-950: initial;
+
+  /* Semantic — chosen to be distinguishable from sky at a glance */
+  --color-success: #3fbf7f; /* 8.33:1 */
+  --color-warning: #e0a33e; /* 8.80:1 */
+  --color-error: #e5484d; /*  4.98:1 */
+  --color-info: #a4d8ff; /*  = sky-200 */
+
+  /* --- Typography (§15.3) ------------------------------------------------ */
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Inter Tight Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --text-xs: 0.75rem; /*   12px — captions, chunk labels   */
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem; /*  14px — secondary, table cells    */
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem; /*    16px — body, inputs (no iOS zoom) */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem; /*  18px — lead paragraphs           */
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.375rem; /*  22px — card titles / h4          */
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.75rem; /*  28px — section h3                */
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 2.25rem; /*  36px — page h2                   */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 3rem; /*     48px — h1                        */
+  --text-4xl--line-height: 1.1;
+  --text-hero: clamp(2.5rem, 6vw, 4.5rem); /* landing h1 only */
+  --text-hero--line-height: 1.05;
+  --text-hero--letter-spacing: -0.03em;
+
+  /* Sizes above 3xl are display sizes: Inter Tight, tightened tracking. */
+  --text-3xl--letter-spacing: -0.02em;
+  --text-4xl--letter-spacing: -0.02em;
+
+  /* --- Spacing, radius, shadow, motion (§15.4) --------------------------- */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Elevation is surface-first; shadows only for floating layers. */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.45);
+  --shadow-glow: 0 0 40px color-mix(in oklab, var(--color-sky-200) 14%, transparent);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-slower: 480ms;
+
+  --sidebar-w: 280px;
+  --sidebar-collapsed-w: 64px;
+  --topbar-h: 56px;
+  --prose-max: 72ch;
+
+  /* Overlay/entrance animations. Radix drives them through data-state, and
+   * base.css collapses every duration under prefers-reduced-motion, so these
+   * degrade to an instant state change rather than being removed. */
+  --animate-fade-in: fade-in var(--dur-base) var(--ease-out);
+  --animate-fade-out: fade-out var(--dur-fast) var(--ease-out);
+  --animate-pop-in: pop-in var(--dur-fast) var(--ease-out);
+  --animate-pop-out: pop-out var(--dur-fast) var(--ease-out);
+  --animate-slide-up: slide-up var(--dur-slow) var(--ease-out);
+  --animate-slide-in-right: slide-in-right var(--dur-slow) var(--ease-out);
+  --animate-slide-out-right: slide-out-right var(--dur-base) var(--ease-out);
+  --animate-slide-in-left: slide-in-left var(--dur-slow) var(--ease-out);
+  --animate-slide-out-left: slide-out-left var(--dur-base) var(--ease-out);
+  --animate-slide-in-bottom: slide-in-bottom var(--dur-slow) var(--ease-out);
+  --animate-slide-out-bottom: slide-out-bottom var(--dur-base) var(--ease-out);
+  --animate-collapse-down: collapse-down var(--dur-base) var(--ease-out);
+  --animate-collapse-up: collapse-up var(--dur-fast) var(--ease-out);
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
+  --animate-caret: caret 1s steps(2, start) infinite;
+  --animate-indeterminate: indeterminate 1.4s var(--ease-in-out) infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes pop-out {
+    to {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes slide-out-right {
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+  @keyframes slide-out-left {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+  @keyframes slide-in-bottom {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes slide-out-bottom {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  /* Radix measures the panel and publishes its height as a custom property, so
+   * a disclosure can animate to its real content height instead of a guess. */
+  @keyframes collapse-down {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+  }
+  @keyframes collapse-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+    to {
+      height: 0;
+      opacity: 0;
+    }
+  }
+  @keyframes shimmer {
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes indeterminate {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(250%);
+    }
+  }
+}
+
+/* Bridge the theme-switchable semantic layer (base.css) into Tailwind's colour
+ * utilities. `inline` means the utility references the var rather than copying
+ * its value, which is what makes `[data-theme="light"]` a 20-line override. */
+@theme inline {
+  --color-bg-base: var(--bg-base);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-glass: var(--surface-glass);
+
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-disabled: var(--text-disabled);
+  --color-on-accent: var(--text-on-accent);
+
+  --color-line: var(--border-subtle);
+  --color-line-strong: var(--border-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-wash: var(--accent-wash);
+  --color-accent-ring: var(--accent-ring);
+
+  --color-wash-success: var(--wash-success);
+  --color-wash-warning: var(--wash-warning);
+  --color-wash-error: var(--wash-error);
+  --color-wash-info: var(--wash-info);
+}
