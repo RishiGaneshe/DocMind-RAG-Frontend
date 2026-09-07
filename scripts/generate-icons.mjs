@@ -125,3 +125,6 @@ for (const [name, size] of [
   writeFileSync(file, png(size, renderRGBA(size)))
   console.log(`wrote ${name} (${size}x${size})`)
 }
+
+//
+//
