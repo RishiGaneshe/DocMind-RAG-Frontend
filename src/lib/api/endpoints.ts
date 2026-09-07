@@ -35,15 +35,6 @@ import {
   type WidgetResponse,
 } from './types'
 
-/**
- * One function per backend route, named after the intent rather than the verb.
- *
- * Paths are written out in full so `grep '/api/tenants'` finds every caller.
- * Documents, query, api-keys and widget are nested under the tenant.
- */
-
-/* --- Auth ---------------------------------------------------------------- */
-
 export interface SignupInput {
   email: string
   password: string
@@ -95,8 +86,6 @@ export async function getCurrentUser(signal?: AbortSignal): Promise<User> {
   return data.user
 }
 
-/* --- Workspace ----------------------------------------------------------- */
-
 export interface CreateTenantInput {
   name: string
   slug: string
@@ -119,8 +108,6 @@ export async function getMyTenant(signal?: AbortSignal): Promise<Tenant> {
   const data = await apiRequest('/tenants/me', { schema: tenantMeResponseSchema, signal })
   return data.tenant
 }
-
-/* --- Documents ----------------------------------------------------------- */
 
 export async function listDocuments(
   tenantId: string,
@@ -160,8 +147,6 @@ export async function deleteDocument(
   })
 }
 
-/* --- Query --------------------------------------------------------------- */
-
 export interface ChatHistoryTurn {
   role: 'user' | 'assistant'
   content: string
@@ -189,8 +174,6 @@ export async function ask(tenantId: string, input: AskInput): Promise<QueryResul
     signal,
   })
 }
-
-/* --- API Keys ------------------------------------------------------------ */
 
 export interface CreateApiKeyInput {
   name: string
@@ -285,8 +268,6 @@ export async function deleteApiKey(tenantId: string, keyId: string): Promise<Api
   return (res as { apiKey: ApiKey }).apiKey
 }
 
-/* --- Widget Configuration ------------------------------------------------ */
-
 export async function getWidgetConfig(
   tenantId: string,
   signal?: AbortSignal,
@@ -307,8 +288,6 @@ export async function updateWidgetConfig(
     schema: widgetResponseSchema,
   })
 }
-
-/* --- Public API (Widget surface) ----------------------------------------- */
 
 export async function getPublicConfig(apiKey: string, signal?: AbortSignal): Promise<PublicConfig> {
   const response = await fetch(`${API_BASE_URL}/public/config`, {
@@ -352,8 +331,6 @@ export async function sendPublicChat(
   }
   return publicChatResponseSchema.parse(body)
 }
-
-/* --- Password recovery (contract only) ----------------------------------- */
 
 export async function requestPasswordReset(email: string): Promise<void> {
   await apiRequest('/auth/forgot-password', {

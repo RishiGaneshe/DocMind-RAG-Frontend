@@ -11,15 +11,6 @@ import { AuthCard, AuthFooterLink } from './AuthCard'
 import { PasswordField } from './PasswordField'
 import { PasswordStrengthMeter } from './PasswordStrengthMeter'
 
-/**
- * Create account (§13.2).
- *
- * Signup always lands on /onboarding/workspace, never /app: the JWT minted here
- * has no `tenantId`, so every tenant-scoped route would 403. The 409 case is the
- * one place we *do* confirm an email exists — the server already does, and
- * pretending otherwise would leave the user re-typing a password forever.
- */
-
 type Banner = { tone: 'error' | 'warning'; title: string; message: string; retry?: boolean }
 
 const LINK =
@@ -53,7 +44,6 @@ export function SignupForm() {
 
     try {
       await signup.mutateAsync(values)
-      // No tenant on a brand-new account, so there is exactly one destination.
       await navigate('/onboarding/workspace', { replace: true })
     } catch (error) {
       if (!(error instanceof ApiError)) {
@@ -73,8 +63,6 @@ export function SignupForm() {
       }
 
       if (error.status === 400) {
-        // The server validated something the client did not; show it verbatim
-        // on the field it belongs to rather than guessing.
         setBanner({ tone: 'error', title: 'Check your details', message: error.message })
         return
       }
@@ -118,8 +106,6 @@ export function SignupForm() {
           </Alert>
         )}
 
-        {/* Stacked on phones — two 44px targets side by side at 320px would be
-            cramped — and paired from sm up, where they read as one unit. */}
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="First name"

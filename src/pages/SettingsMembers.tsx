@@ -5,15 +5,6 @@ import { useDocumentTitle } from '@/hooks'
 import { formatDateTime } from '@/lib/utils'
 import { useSessionStore } from '@/stores/sessionStore'
 
-/**
- * `/app/settings/members` — you, and an honest gap.
- *
- * The data model supports several users per tenant (`User.tenantId`, and a role
- * of owner or member), but there is no endpoint that lists them and none that
- * invites anyone. So this pane shows the one member it can prove exists — the
- * signed-in user — and says plainly that inviting is not wired up, rather than
- * offering a form that would 404.
- */
 export default function SettingsMembersPage() {
   useDocumentTitle('Members')
 

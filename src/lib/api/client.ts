@@ -3,14 +3,6 @@ import { tokenStorage, type TokenPair } from '../tokenStorage'
 import { refreshResponseSchema } from './types'
 import type { z } from 'zod'
 
-/**
- * The one place that speaks HTTP.
- *
- * Components never call `fetch`. They call a hook, the hook calls an endpoint
- * function, and the endpoint function calls through here — so the Authorization
- * header, the refresh dance, and error normalisation exist exactly once.
- */
-
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
@@ -32,7 +24,6 @@ export class ApiError extends Error {
     this.retryAfter = retryAfter
   }
 
-  /** No response at all — offline, DNS failure, server down. */
   get isNetworkError(): boolean {
     return this.status === 0
   }
@@ -54,11 +45,6 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Called when the session cannot be recovered — a revoked token, or a refresh
- * that failed. sessionStore subscribes and raises SessionExpiredDialog, so a
- * long chat is never discarded by a background 401 (§11.1).
- */
 type SessionExpiredHandler = () => void
 let onSessionExpired: SessionExpiredHandler | null = null
 
@@ -70,8 +56,6 @@ function expireSession(): void {
   tokenStorage.clear()
   onSessionExpired?.()
 }
-
-/* --- Single-flight refresh ------------------------------------------------ */
 
 let inFlightRefresh: Promise<TokenPair> | null = null
 
@@ -92,16 +76,10 @@ async function performRefresh(): Promise<TokenPair> {
   if (!parsed.success) throw new ApiError('Malformed refresh response', 500, 'RESPONSE_SHAPE')
 
   const pair = { accessToken: parsed.data.accessToken, refreshToken: parsed.data.refreshToken }
-  // Keep the caller's original "remember me" choice.
   tokenStorage.set(pair)
   return pair
 }
 
-/**
- * Concurrent 401s share one refresh request. Without this, ten parallel
- * requests would fire ten refreshes, and the backend rotates the refresh token
- * on use — nine of them would fail and log the user out.
- */
 function refreshTokens(): Promise<TokenPair> {
   inFlightRefresh ??= performRefresh().finally(() => {
     inFlightRefresh = null
@@ -139,14 +117,6 @@ const STATUS_FALLBACKS: Record<number, string> = {
   504: 'The request timed out. Please try again.',
 }
 
-/**
- * Turns any of the three server error shapes (or non-JSON HTML) into { message, code, retryAfter }.
- *
- * Shape A: Route handler rejected { success: false, error: "...", code: "..." }
- * Shape B: Express pre-handler rejected { error: { message: "..." } } (413 or malformed JSON)
- * Shape C: No route matched { error: "Not found", path: "..." } (404)
- * Reverse proxy HTML: string / null
- */
 export function normaliseError(
   status: number,
   body: unknown,
@@ -159,7 +129,6 @@ export function normaliseError(
       : null) ||
     null
 
-  // Shape B: Express pre-handler error where error is an object
   if (
     body &&
     typeof body === 'object' &&
@@ -171,7 +140,6 @@ export function normaliseError(
     return { message: msg, code: undefined, retryAfter }
   }
 
-  // Shape A & C: Route rejection where error is a string
   if (
     body &&
     typeof body === 'object' &&
@@ -186,9 +154,7 @@ export function normaliseError(
     return { message: errorStr, code: codeStr, retryAfter }
   }
 
-  // Plain string or HTML response from proxy
   if (typeof body === 'string' && body.trim()) {
-    // If it looks like HTML, use status fallback instead of dumping HTML into UI
     if (body.trim().startsWith('<')) {
       return {
         message: STATUS_FALLBACKS[status] ?? `Service responded with status ${status}.`,
@@ -214,10 +180,8 @@ export function toApiError(status: number, payload: unknown, headers?: Headers):
 export interface RequestOptions<TSchema extends z.ZodType> {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
-  /** Validates the response. Omit only for endpoints with no useful body. */
   schema?: TSchema
   signal?: AbortSignal
-  /** Skip the Authorization header and the refresh retry (login, signup). */
   anonymous?: boolean
   headers?: Record<string, string>
 }
@@ -253,8 +217,6 @@ export async function apiRequest<TSchema extends z.ZodType>(
 
   let response = await send(anonymous ? null : tokenStorage.getAccessToken())
 
-  // One silent refresh + replay. `anonymous` requests never retry: a 401 from
-  // /auth/login means bad credentials, not a stale token.
   if (response.status === 401 && !anonymous) {
     const payload = await readBody(response)
     const error = toApiError(401, payload, response.headers)
@@ -289,11 +251,6 @@ export async function apiRequest<TSchema extends z.ZodType>(
   return parsed.data
 }
 
-/**
- * True for the exception a cancelled request throws. Callers use it to tell
- * "the user pressed Stop" apart from "the request failed", which are very
- * different things to put on screen.
- */
 export function isAbortError(error: unknown): boolean {
   return (
     (error instanceof DOMException && error.name === 'AbortError') ||
@@ -301,5 +258,4 @@ export function isAbortError(error: unknown): boolean {
   )
 }
 
-/** Exposed for the SSE transport, which manages its own fetch. */
 export { refreshTokens, expireSession }

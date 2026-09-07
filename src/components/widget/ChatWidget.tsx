@@ -18,7 +18,6 @@ export interface ChatWidgetProps {
   apiKey?: string
   initiallyOpen?: boolean
   className?: string
-  /** If true, fills its parent container rather than floating via fixed coordinates */
   embedded?: boolean
 }
 
@@ -74,7 +73,6 @@ export function ChatWidget({
   const [sessionId] = useState(() => `sess_${Math.random().toString(36).substring(2, 9)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Sync greeting updates from config if only greeting is displayed
   useEffect(() => {
     setMessages((prev) => {
       if (prev.length === 1 && prev[0].id === 'greeting') {
@@ -105,7 +103,6 @@ export function ChatWidget({
       timestamp: 'Just now',
     }
 
-    // Build prior history before optimistic append (per INTEGRATION_GUIDE §B7 / §C4)
     const priorHistory = messages
       .filter((m) => m.id !== 'greeting' && m.content.trim().length > 0)
       .slice(-6)
@@ -153,7 +150,6 @@ export function ChatWidget({
         setLoading(false)
       }
     } else {
-      // Preview mode simulated response grounded in documents
       setTimeout(() => {
         const reply: ChatMessage = {
           id: `bot_${Date.now()}`,
@@ -205,7 +201,6 @@ export function ChatWidget({
       )}
       style={{ '--widget-accent': accentColor } as React.CSSProperties}
     >
-      {/* Launcher Bubble */}
       {!embedded && (
         <button
           type="button"
@@ -231,7 +226,6 @@ export function ChatWidget({
         </button>
       )}
 
-      {/* Chat Window */}
       {(isOpen || embedded) && (
         <div
           className={cn(
@@ -244,7 +238,6 @@ export function ChatWidget({
                 ),
           )}
         >
-          {/* Header */}
           <div
             style={{ backgroundColor: accentColor }}
             className="relative flex items-center justify-between px-4 py-3 text-white"
@@ -284,7 +277,6 @@ export function ChatWidget({
             </div>
           </div>
 
-          {/* Messages Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-bg/40 text-xs">
             {messages.map((msg) => {
               const isBot = msg.role === 'assistant'
@@ -306,7 +298,6 @@ export function ChatWidget({
                     {msg.content}
                   </div>
 
-                  {/* Sources display based on sourceMode */}
                   {isBot && msg.sources && msg.sources.length > 0 && sourceMode !== 'hidden' && (
                     <div className="w-full max-w-[90%] space-y-1 pt-1">
                       {sourceMode === 'labels' ? (
@@ -323,7 +314,6 @@ export function ChatWidget({
                           ))}
                         </div>
                       ) : (
-                        // sourceMode === 'full'
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
                             Sources ({msg.sources.length})
@@ -368,7 +358,6 @@ export function ChatWidget({
               )
             })}
 
-            {/* Loading / Typing Indicator */}
             {loading && (
               <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-xs border border-line bg-surface-raised px-3.5 py-2.5 text-fg w-fit">
                 <span className="size-1.5 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
@@ -377,7 +366,6 @@ export function ChatWidget({
               </div>
             )}
 
-            {/* Starter questions pills (only show when single greeting turn) */}
             {messages.length === 1 && suggestions && suggestions.length > 0 && (
               <div className="pt-2 space-y-1.5">
                 <span className="text-[10px] font-medium text-fg-muted">Suggested questions:</span>
@@ -400,7 +388,6 @@ export function ChatWidget({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Footer */}
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -429,7 +416,6 @@ export function ChatWidget({
               </button>
             </div>
 
-            {/* Footer Note and Brand Notice */}
             {footerNote && (
               <p className="mt-1.5 text-center text-[10px] text-fg-muted truncate">{footerNote}</p>
             )}

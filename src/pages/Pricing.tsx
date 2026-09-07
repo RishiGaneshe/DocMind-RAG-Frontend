@@ -7,15 +7,6 @@ import { useDocumentTitle } from '@/hooks'
 import { MAX_UPLOAD_BYTES } from '@/lib/constants'
 import { formatBytes } from '@/lib/utils'
 
-/**
- * `/pricing` (§10.9).
- *
- * There is no billing system: no plans table, no payment provider, no metering.
- * So this page says one price — nothing — and describes the limits that are
- * actually enforced in code. Inventing three tiers with checkmarks would be the
- * only dishonest page on the site.
- */
-
 const INCLUDED = [
   `PDF uploads up to ${formatBytes(MAX_UPLOAD_BYTES)} each`,
   'As many documents as you care to index',

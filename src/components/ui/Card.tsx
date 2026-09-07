@@ -1,10 +1,5 @@
 import { cn } from '@/lib/utils'
 
-/**
- * Elevation is expressed through the surface ramp, not shadows (§15.4) — a card
- * inside a card should read as *lighter*, not as *floating*. Only genuinely
- * floating layers (dialogs, popovers) get a shadow.
- */
 const ELEVATION = {
   0: 'bg-transparent border-line',
   1: 'bg-surface border-line',
@@ -14,7 +9,6 @@ const ELEVATION = {
 
 interface CardProps extends React.HTMLAttributes<HTMLElement> {
   elevation?: keyof typeof ELEVATION
-  /** Adds hover affordance; use only when the whole card is a link/button. */
   interactive?: boolean
   as?: 'div' | 'article' | 'section' | 'li'
   ref?: React.Ref<HTMLDivElement>

@@ -3,15 +3,6 @@ import { Outlet } from 'react-router'
 import { Logo } from '@/components/brand'
 import { FadeIn, OrbBackdrop } from '@/components/motion'
 
-/**
- * The shell behind /login, /signup and the recovery screens (§13.0).
- *
- * Two structural fixes over the pages this replaces: the scroll container uses
- * `min-h-dvh` with `overflow-y-auto` — the old `overflow: hidden` clipped the
- * signup card on short viewports — and `dvh` rather than `vh`, so mobile
- * browser chrome appearing does not shift the layout.
- */
-
 const PROOF_POINTS = [
   'Every answer cites the exact chunk it came from',
   'Workspaces are isolated at the vector level, not by a filter',

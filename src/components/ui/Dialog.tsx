@@ -48,7 +48,6 @@ export function DialogContent({
       />
       <DialogPrimitive.Content
         className={cn(
-          // Full-width sheet on phones, centred card from sm up (§16).
           'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-xl border border-line bg-surface shadow-lg',
           'pb-[env(safe-area-inset-bottom)]',
           'sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:pb-0',

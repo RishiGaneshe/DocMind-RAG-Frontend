@@ -7,20 +7,7 @@ import { ACCEPTED_UPLOAD_EXT, ACCEPTED_UPLOAD_MIME, MAX_UPLOAD_BYTES } from '@/l
 import { cn, formatBytes, formatNumber, stripExtension } from '@/lib/utils'
 import { useUploadDocument, validateFile } from '../hooks/useUploadDocument'
 
-/**
- * Choosing a PDF and watching it become searchable.
- *
- * The drop target is a real `<button>`, not a div with a click handler: it has to
- * be reachable by Tab and operable with Enter, because "drag a file here" is not
- * an instruction everyone can follow. Drag-and-drop is the enhancement.
- *
- * The result summary reports `chunksSkipped` verbatim rather than hiding it. A
- * document that embedded 40 of 52 chunks is only partly searchable, and the only
- * person who can decide whether that matters is the person who uploaded it.
- */
-
 interface UploadPanelProps {
-  /** Called after a successful upload, once the user is done reading the result. */
   onDone?: () => void
 }
 
@@ -44,8 +31,6 @@ export function UploadPanel({ onDone }: UploadPanelProps) {
     reset()
     input.current?.focus()
   }
-
-  /* --- Result ------------------------------------------------------------ */
 
   if (result) {
     const filename = result.filename || result.document?.filename || file?.name || 'Document'
@@ -120,9 +105,6 @@ export function UploadPanel({ onDone }: UploadPanelProps) {
       </div>
     )
   }
-
-
-  /* --- Picker / progress ------------------------------------------------- */
 
   return (
     <div className="flex flex-col gap-4">

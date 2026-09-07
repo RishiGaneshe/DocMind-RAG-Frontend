@@ -19,14 +19,6 @@ import { useHotkey } from '@/hooks'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/stores/uiStore'
 
-/**
- * ⌘K / Ctrl+K (§12.8).
- *
- * Built as a combobox over a listbox rather than a menu: the filter field keeps
- * focus while the highlighted option is announced through `aria-activedescendant`,
- * which is the pattern screen readers expect from a search-and-jump surface.
- */
-
 interface Command {
   id: string
   label: string

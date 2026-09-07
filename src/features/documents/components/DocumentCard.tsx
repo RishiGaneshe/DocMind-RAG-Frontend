@@ -5,14 +5,6 @@ import { cn, formatBytes, formatDateTime, formatNumber, formatRelativeTime } fro
 import { DocumentActions } from './DocumentActions'
 import { StatusPill } from './StatusPill'
 
-/**
- * The library below `lg`.
- *
- * A table at 375 px either scrolls sideways or crushes the filename to three
- * characters; neither is usable, so the same five attributes are re-laid out as
- * a stack. This is not the table with `display: block` — it is a different
- * arrangement of the same data, which is why it is its own component (§16).
- */
 export function DocumentCard({
   document,
   active = false,

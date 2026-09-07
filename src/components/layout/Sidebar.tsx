@@ -8,15 +8,6 @@ import { useSessionStore } from '@/stores/sessionStore'
 import { useUiStore } from '@/stores/uiStore'
 import { SidebarUserCard } from './SidebarUserCard'
 
-/**
- * The app rail (§12.4, §16).
- *
- * One implementation serves two presentations: a persistent 280 px column from
- * `lg` up that collapses to a 64 px icon rail, and a left `Drawer` below it.
- * Rendering both and hiding one with CSS would put two copies of every link in
- * the accessibility tree, so the breakpoint is a *tree* decision, not a style.
- */
-
 const NAV = [
   { to: '/app', label: 'Chat', icon: MessagesSquare, end: true },
   { to: '/app/documents', label: 'Documents', icon: FileText, end: false },

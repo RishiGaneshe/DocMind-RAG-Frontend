@@ -6,14 +6,6 @@ import { Button } from '@/components/ui'
 import { useLogout } from '@/features/auth/hooks/useAuthMutations'
 import { ThemeToggle } from './ThemeToggle'
 
-/**
- * The shell for `/onboarding/*` (§11).
- *
- * Deliberately not the app shell: there is no workspace yet, so a sidebar of
- * documents and a chat composer would be links to 403s. For the same reason the
- * header carries only the two things that work without a tenant — the theme and
- * signing out.
- */
 export function OnboardingLayout() {
   const navigate = useNavigate()
   const logout = useLogout()

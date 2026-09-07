@@ -1,11 +1,3 @@
-// Rasterises the DocMind logo mark into the PNG sizes that browsers cannot take
-// as SVG: apple-touch-icon.png (iOS home screen) and icon-512.png (manifest).
-//
-//   node scripts/generate-icons.mjs
-//
-// Deliberately dependency-free — the mark is nothing but rounded rectangles, so
-// a 4x-supersampled software rasteriser plus zlib is enough, and the build stays
-// free of a native image toolchain.
 import { deflateSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -14,7 +6,6 @@ import { dirname, join } from 'node:path'
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public')
 const SS = 4 // supersampling factor per axis
 
-/** Rounded-rect coverage test in a normalised 32x32 design space. */
 const roundedRect = (x, y, w, h, r) => (px, py) => {
   const cx = Math.min(Math.max(px, x + r), x + w - r)
   const cy = Math.min(Math.max(py, y + r), y + h - r)
@@ -24,7 +15,6 @@ const roundedRect = (x, y, w, h, r) => (px, py) => {
   return dx * dx + dy * dy <= r * r
 }
 
-// #0A0D0F plate + the three Icy Blue bars, identical geometry to favicon.svg.
 const LAYERS = [
   { hit: roundedRect(0, 0, 32, 32, 7), rgb: [0x0a, 0x0d, 0x0f], a: 1 },
   { hit: roundedRect(7, 8, 18, 3.5, 1.75), rgb: [0xa4, 0xd8, 0xff], a: 1 },
@@ -37,7 +27,6 @@ function renderRGBA(size) {
   const step = 32 / size
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      // Accumulate premultiplied colour over the SS x SS sample grid.
       let r = 0
       let g = 0
       let b = 0
@@ -101,9 +90,9 @@ function png(size, rgba) {
   const ihdr = Buffer.alloc(13)
   ihdr.writeUInt32BE(size, 0)
   ihdr.writeUInt32BE(size, 4)
-  ihdr[8] = 8 // bit depth
-  ihdr[9] = 6 // colour type: truecolour + alpha
-  // Prefix every scanline with filter type 0 (None).
+  ihdr[8] = 8 
+  ihdr[9] = 6 
+ 
   const raw = Buffer.alloc(size * (size * 4 + 1))
   for (let y = 0; y < size; y++) {
     raw[y * (size * 4 + 1)] = 0

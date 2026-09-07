@@ -14,16 +14,6 @@ import { useDocumentTitle } from '@/hooks'
 import { ApiError, type DocumentRecord } from '@/lib/api'
 import { formatBytes, formatNumber } from '@/lib/utils'
 
-/**
- * `/app/documents` — the library.
- *
- * The list is the only document endpoint the API has, so this page is also the
- * cache that `/app/documents/:documentId` reads from. Both the upload dialog and
- * the detail drawer are child routes rendered through `<Outlet />`: the list
- * stays mounted and visible behind them, which is the point of putting them on
- * URLs at all — a link to one document does not throw away the list.
- */
-
 const COMPARATORS: Record<SortKey, (a: DocumentRecord, b: DocumentRecord) => number> = {
   newest: (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
   oldest: (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt),

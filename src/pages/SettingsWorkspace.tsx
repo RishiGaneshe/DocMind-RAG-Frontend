@@ -11,13 +11,6 @@ import { useDocuments, useDocumentStats } from '@/features/documents/hooks/useDo
 import { useCopyToClipboard, useDocumentTitle } from '@/hooks'
 import { formatBytes, formatDateTime, formatNumber } from '@/lib/utils'
 
-/**
- * `/app/settings/workspace` — read-only.
- *
- * There is no `PATCH /api/tenants/:id`, so this pane reports rather than edits.
- * The usage numbers come from the document list, which is the only place the API
- * exposes them; they are counts of what is indexed, not a billing meter.
- */
 export default function SettingsWorkspacePage() {
   useDocumentTitle('Workspace settings')
 

@@ -10,8 +10,6 @@ export function TabsList({
   return (
     <TabsPrimitive.List
       className={cn(
-        // Horizontal scroll rather than wrapping: settings tabs must stay on
-        // one line at 320px (§16).
         'flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         className,
       )}

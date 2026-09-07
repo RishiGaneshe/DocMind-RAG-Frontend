@@ -5,14 +5,6 @@ import { useDocumentTitle } from '@/hooks'
 import { formatBytes } from '@/lib/utils'
 import { MAX_UPLOAD_BYTES } from '@/lib/constants'
 
-/**
- * `/app/documents/upload` — a modal route.
- *
- * On a URL rather than in component state so that "upload" is linkable, shows up
- * in history, and can be reached from the command palette and the empty state
- * without those two places each owning a copy of the dialog. Closing it returns
- * to the list, which is rendered underneath by the parent route.
- */
 export default function DocumentUploadPage() {
   useDocumentTitle('Upload a document')
   const navigate = useNavigate()

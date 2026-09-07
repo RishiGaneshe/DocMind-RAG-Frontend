@@ -7,15 +7,6 @@ import { useForgotPassword } from '../hooks/useAuthMutations'
 import { forgotPasswordSchema, type ForgotPasswordValues } from '../schemas'
 import { AuthCard, AuthFooterLink } from './AuthCard'
 
-/**
- * Request a reset link (§13.3). Only reachable when
- * `VITE_FEATURE_PASSWORD_RESET=true`, because the endpoint it needs does not
- * exist server-side yet.
- *
- * The confirmation is identical whether or not the address is registered — a
- * "no such account" reply here would turn this page into an account-enumeration
- * oracle, which is exactly what the uniform 401 on /login avoids.
- */
 export function ForgotPasswordForm() {
   const request = useForgotPassword()
   const [sentTo, setSentTo] = useState<string | null>(null)

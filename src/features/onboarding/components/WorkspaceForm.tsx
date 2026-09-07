@@ -11,19 +11,6 @@ import { slugify } from '@/lib/utils'
 import { useSessionStore } from '@/stores/sessionStore'
 import { workspaceSchema, type WorkspaceValues } from '../schemas'
 
-/**
- * `/onboarding/workspace` — the one screen between signing up and using the
- * product (§14).
- *
- * Two steps, because the second one is not busywork: the slug becomes the
- * workspace's identity in the API and cannot be changed afterwards (there is no
- * PATCH /api/tenants), so it gets a confirmation rather than being buried under
- * a "Create" button.
- *
- * The slug tracks the name until the moment it is edited by hand, then stops
- * forever. Silently rewriting a value someone typed is the kind of small
- * betrayal that makes a form feel untrustworthy.
- */
 export function WorkspaceForm() {
   const navigate = useNavigate()
   const adoptWorkspace = useSessionStore((s) => s.adoptWorkspace)

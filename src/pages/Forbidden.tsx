@@ -6,14 +6,6 @@ import { useSession } from '@/features/auth/hooks/useSession'
 import { useLogout } from '@/features/auth/hooks/useAuthMutations'
 import { useDocumentTitle } from '@/hooks'
 
-/**
- * `/403` — reached on a `TENANT_MISMATCH` (§11.1, §12.6).
- *
- * The only real remedies are "go to the workspace your token actually belongs
- * to" and "sign in as someone else", so those are the two actions. There is no
- * workspace *switcher* to offer: the API issues one tenant per token, and
- * membership of a second workspace is not something the backend models yet.
- */
 export default function ForbiddenPage() {
   useDocumentTitle('Access denied')
   const { tenant, tenantId } = useSession()

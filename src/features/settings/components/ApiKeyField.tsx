@@ -4,19 +4,6 @@ import { toast } from 'sonner'
 import { Alert, Button, IconButton, Label } from '@/components/ui'
 import { useCopyToClipboard } from '@/hooks'
 
-/**
- * The workspace API key.
- *
- * Masked by default and revealed only on request (§12.8). A key rendered in
- * plain text ends up in screenshots, screen shares and over-the-shoulder
- * glances; the reveal is a deliberate act, and it flips back the moment you
- * leave the pane because the component unmounts with `shown = false`.
- *
- * Copy does not require revealing — the common case is pasting it into a
- * terminal, and that never needs the characters on screen.
- */
-
-/** Keeps the first and last four characters so a key can be *identified*. */
 function mask(key: string): string {
   if (key.length <= 12) return '•'.repeat(key.length)
   return `${key.slice(0, 4)}${'•'.repeat(Math.min(24, key.length - 8))}${key.slice(-4)}`

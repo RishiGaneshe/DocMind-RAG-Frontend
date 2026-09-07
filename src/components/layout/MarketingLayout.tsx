@@ -7,27 +7,14 @@ import { useSession } from '@/features/auth/hooks/useSession'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
 
-/**
- * The public shell: `/`, `/pricing`, `/legal/*` (§11).
- *
- * The header's right-hand side depends on the session — someone already signed
- * in wants "Open app", not "Sign up" — because a marketing page that pretends
- * not to know you is a small insult.
- *
- * The mobile menu is a plain conditional panel rather than a portal: there is no
- * focus trap to get wrong, Escape closes it, and route changes close it.
- */
-
 const LINKS = [
   { to: '/pricing', label: 'Pricing' },
   { to: '/legal/privacy', label: 'Privacy' },
   { to: '/legal/terms', label: 'Terms' },
 ]
 
-/** Named so the toggle can point `aria-controls` at the panel it opens. */
 const MENU_ID = 'marketing-menu'
 
-/** The mobile panel's links, matching the desktop nav's focus ring. */
 const MOBILE_LINK =
   'rounded-md px-3 py-3 text-sm text-fg-secondary transition-colors duration-(--dur-fast) hover:bg-surface-raised hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--border-focus)'
 

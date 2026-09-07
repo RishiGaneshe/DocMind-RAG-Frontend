@@ -4,14 +4,6 @@ import { CommandPalette } from './CommandPalette'
 import { Sidebar, SidebarDrawer } from './Sidebar'
 import { Topbar } from './Topbar'
 
-/**
- * The signed-in shell (§12.4).
- *
- * The outer element is `h-dvh overflow-hidden` and `<main>` owns the only
- * scroll container. That is what lets the chat composer sit at the bottom edge
- * without `position: fixed` — and `dvh` rather than `vh` means the mobile URL
- * bar collapsing does not shove it off screen.
- */
 export function AppLayout() {
   const { pathname } = useLocation()
 

@@ -6,26 +6,12 @@ import { MAX_QUERY_CHARS, QUERY_WARN_RATIO } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { RetrievalSettings } from './RetrievalSettings'
 
-/**
- * The composer.
- *
- * A bespoke field rather than the `Textarea` primitive: the counter and the send
- * control belong *inside* the same bordered box as the input, and the box has to
- * grow with the text. The accessibility wiring the primitive would have given
- * for free is therefore done here by hand — a real `<label>`, `aria-describedby`
- * for the hint and the counter, and `aria-invalid` once the limit is passed.
- *
- * Enter sends and Shift+Enter breaks the line, which is the convention people
- * arrive with. During a stream the send button becomes Stop.
- */
-
 interface ComposerProps {
   value: string
   onChange: (value: string) => void
   onSubmit: (value: string) => void
   onStop: () => void
   isStreaming: boolean
-  /** False until a workspace exists — sending would 403. */
   ready?: boolean
   autoFocus?: boolean
 }
@@ -57,7 +43,6 @@ export function Composer({
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // `isComposing` guards IME candidate selection, where Enter commits a word.
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault()
       submit()
@@ -98,8 +83,6 @@ export function Composer({
             <textarea
               ref={ref}
               id={fieldId}
-              // The chat page's single purpose is this field; focusing it saves
-              // every user a click (see the rule's exception in eslint.config.js).
               autoFocus={autoFocus}
               rows={1}
               value={value}
@@ -127,8 +110,6 @@ export function Composer({
               <div className="flex items-center gap-1">
                 <p
                   id={counterId}
-                  // Silent until it matters; a counter that speaks on every
-                  // keystroke makes the field unusable with a screen reader.
                   aria-live={warn ? 'polite' : 'off'}
                   className={cn(
                     'mr-1 font-mono text-xs tabular-nums',

@@ -2,16 +2,10 @@ import * as LabelPrimitive from '@radix-ui/react-label'
 import { cn } from '@/lib/utils'
 
 interface LabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
-  /** Renders the "Required" affordance. Never rely on the asterisk alone. */
   required?: boolean
   optional?: boolean
 }
 
-/**
- * A real `<label for>`. The design deliberately has no floating-placeholder
- * labels: those disappear once a field has content, which breaks both
- * comprehension and autofill (§13.1).
- */
 export function Label({ className, children, required, optional, ...props }: LabelProps) {
   return (
     <LabelPrimitive.Root

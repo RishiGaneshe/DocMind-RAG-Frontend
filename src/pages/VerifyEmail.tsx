@@ -3,14 +3,6 @@ import { Alert, Button } from '@/components/ui'
 import { AuthCard, AuthFooterLink } from '@/features/auth/components/AuthCard'
 import { useDocumentTitle } from '@/hooks'
 
-/**
- * `/verify-email?token=…` (§11).
- *
- * There is no verification endpoint and `User.isEmailVerified` is never read by
- * any guard, so nothing here can honestly "verify" anything. Rather than fake a
- * success screen, the page says what is actually true — accounts work
- * immediately — and gets the user moving.
- */
 export default function VerifyEmailPage() {
   useDocumentTitle('Email verification')
 

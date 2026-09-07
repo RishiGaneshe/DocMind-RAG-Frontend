@@ -1,14 +1,5 @@
 import { Container, Skeleton, Spinner } from '@/components/ui'
 
-/**
- * Suspense fallbacks for lazily-loaded routes.
- *
- * These are skeletons, not spinners, wherever the shape of the page is known in
- * advance (§11.1): a placeholder that matches the layout it is about to become
- * makes the load feel like the page arriving, not like the app stalling.
- */
-
-/** Generic page-level fallback — a title bar and a few blocks. */
 export function RouteFallback() {
   return (
     <Container width="lg" className="flex flex-col gap-6 py-10" aria-busy="true">

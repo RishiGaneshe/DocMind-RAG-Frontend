@@ -5,13 +5,6 @@ import { FadeIn, OrbBackdrop } from '@/components/motion'
 import { useDocumentTitle } from '@/hooks'
 import { useSession } from '@/features/auth/hooks/useSession'
 
-/**
- * `/*` — the marketing-chrome 404 (§11).
- *
- * The primary action depends on who is asking: a signed-in user wants their
- * workspace back, a visitor wants the front door. A single hard-coded "go home"
- * would be wrong for one of them.
- */
 export default function NotFoundPage() {
   useDocumentTitle('Page not found')
   const { isAuthenticated, tenantId } = useSession()

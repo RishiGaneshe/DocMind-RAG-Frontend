@@ -5,19 +5,11 @@ import { formatDate } from '@/lib/utils'
 
 interface LegalDocProps {
   title: string
-  /** ISO date the text last changed — shown, because an undated policy is a smell. */
   updated: string
   summary: string
   children: React.ReactNode
 }
 
-/**
- * The shell for `/legal/privacy` and `/legal/terms` (§10.10).
- *
- * Plain prose at `--prose-max`, no card, no illustration. Legal text is read
- * linearly by someone looking for one clause, so the only design goals are
- * measure, heading contrast and an in-page anchor that survives a link.
- */
 export function LegalDoc({ title, updated, summary, children }: LegalDocProps) {
   return (
     <Container width="prose" as="main" className="py-12 sm:py-16">

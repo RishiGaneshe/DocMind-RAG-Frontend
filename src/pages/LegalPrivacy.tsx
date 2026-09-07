@@ -2,14 +2,6 @@ import { Alert } from '@/components/ui'
 import { LegalDoc, LegalSection } from '@/features/marketing/components'
 import { useDocumentTitle } from '@/hooks'
 
-/**
- * `/legal/privacy`.
- *
- * Written from what the code actually does — the tables that exist, the three
- * external services a request touches, and the retention behaviour we can point
- * at. The banner at the top says plainly that this is not a lawyer's document,
- * because shipping boilerplate that pretends otherwise is the worse option.
- */
 export default function LegalPrivacyPage() {
   useDocumentTitle('Privacy')
 

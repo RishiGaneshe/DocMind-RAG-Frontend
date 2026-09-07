@@ -4,16 +4,8 @@ import { Badge } from '@/components/ui'
 import type { Source } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
-/**
- * One retrieved chunk, as a citation.
- *
- * The whole card is the link. Displays the citation number `[1]`, document
- * filename, page number, breadcrumb, and relevance score / scoreType.
- */
-
 interface SourceCardProps {
   source: Source
-  /** From the documents cache; fallback if source.filename is absent. */
   filename?: string
   className?: string
 }

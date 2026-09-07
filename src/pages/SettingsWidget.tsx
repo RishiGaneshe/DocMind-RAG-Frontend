@@ -85,12 +85,6 @@ const POSITION_OPTIONS: RadioOption[] = [
   },
 ]
 
-/**
- * `/app/settings/widget` — Embeddable Chat Widget Customizer & Preview.
- *
- * Configures colors, greetings, position, citation modes, and suggested questions.
- * Includes side-by-side interactive preview and embed code generator with public API key integration.
- */
 export default function SettingsWidgetPage() {
   useDocumentTitle('Chat Widget')
 
@@ -99,7 +93,6 @@ export default function SettingsWidgetPage() {
   const updateMutation = useUpdateWidgetConfig()
   const { copy, copied } = useCopyToClipboard()
 
-  // Form draft state
   const [draft, setDraft] = useState<Partial<WidgetConfig>>({
     title: 'DocMind AI',
     greeting: 'Hello! Ask me anything about our documents.',

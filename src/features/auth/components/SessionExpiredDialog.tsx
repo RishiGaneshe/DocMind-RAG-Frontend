@@ -10,15 +10,6 @@ import { useSessionStore } from '@/stores/sessionStore'
 import { useLogin } from '../hooks/useAuthMutations'
 import { PasswordField } from './PasswordField'
 
-/**
- * Re-authenticate without leaving the page (§11.1).
- *
- * This is the highest-value fix in the plan: today an expired token during a
- * long chat throws the conversation away. Here the app stays mounted — the
- * composer keeps its draft, the answer keeps its text — and the user types
- * their password into a modal over the top of it.
- */
-
 const schema = z.object({ password: z.string().min(1, 'Enter your password.') })
 type Values = z.infer<typeof schema>
 

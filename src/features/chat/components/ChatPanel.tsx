@@ -8,15 +8,7 @@ import { MessageList } from './MessageList'
 import { SuggestionGrid } from './SuggestionGrid'
 import { useChat } from '../hooks/useChat'
 
-/**
- * The chat surface: thread on top, composer welded to the bottom.
- *
- * The height chain matters more than it looks. This element is
- * `min-h-0 flex-1 flex-col`, the thread is the only `flex-1` child with its own
- * scroll, and the composer is `shrink-0` — so a two-line question grows the box
- * upward instead of pushing the send button off the viewport, and no
- * `position: fixed` is involved anywhere.
- */
+
 export function ChatPanel() {
   const { messages, streamingId, isStreaming, draft, setDraft, send, stop, retry, clear, ready } =
     useChat()

@@ -3,13 +3,6 @@ import { Link } from 'react-router'
 import { Button, Container, EmptyState } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks'
 
-/**
- * `/app/*` — the 404 that keeps the shell (§11).
- *
- * A signed-in user who mistypes a URL should not be thrown out to the marketing
- * 404: the sidebar, their documents and the composer are all still valid, and
- * losing them makes a typo feel like a crash.
- */
 export default function AppNotFoundPage() {
   useDocumentTitle('Page not found')
 

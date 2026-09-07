@@ -4,14 +4,6 @@ import { Container } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks'
 import { cn } from '@/lib/utils'
 
-/**
- * `/app/settings` — the parent of the settings panes.
- *
- * The panes are routes, not tabs in local state, so a link to the API key pane
- * works and the back button behaves. `NavLink` supplies `aria-current="page"`,
- * which is the accessible half of the highlight.
- */
-
 const PANES = [
   { to: '/app/settings/workspace', label: 'Workspace', icon: <Building2 /> },
   { to: '/app/settings/api-keys', label: 'API keys', icon: <KeyRound /> },
@@ -34,8 +26,6 @@ export default function SettingsPage() {
       </header>
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[200px_1fr] lg:items-start lg:gap-8">
-        {/* A horizontal scroller on phones, a rail from lg — the same list either
-            way, so the tab order never changes with the viewport. */}
         <nav aria-label="Settings sections" className="-mx-4 px-4 lg:mx-0 lg:px-0">
           <ul className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
             {PANES.map((pane) => (

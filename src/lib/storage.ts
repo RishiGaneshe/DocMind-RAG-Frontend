@@ -1,13 +1,3 @@
-/**
- * The single choke point for the Web Storage API.
- *
- * Everything that persists across reloads goes through here — tokenStorage.ts
- * for credentials, uiStore for preferences — so the eventual move to httpOnly
- * cookies (§20.3) touches two files, and a storage-denied browser (Safari
- * private mode, hardened enterprise profiles) degrades to in-memory instead of
- * throwing on module load.
- */
-
 type Kind = 'local' | 'session'
 
 const memory = new Map<string, string>()
@@ -15,7 +5,6 @@ const memory = new Map<string, string>()
 function backend(kind: Kind): Storage | null {
   try {
     const store = kind === 'local' ? window.localStorage : window.sessionStorage
-    // Access alone can throw when storage is blocked; touch it to be sure.
     const probe = '__docmind_probe__'
     store.setItem(probe, '1')
     store.removeItem(probe)
@@ -59,11 +48,10 @@ export function removeStorage(kind: Kind, key: string): void {
   try {
     store.removeItem(key)
   } catch {
-    /* nothing to do — the value is already unreachable */
+    // Ignored
   }
 }
 
-/** Read a JSON value, returning `fallback` when absent or corrupt. */
 export function readJson<T>(kind: Kind, key: string, fallback: T): T {
   const raw = readStorage(kind, key)
   if (raw === null) return fallback

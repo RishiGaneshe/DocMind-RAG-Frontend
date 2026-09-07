@@ -6,16 +6,12 @@ export type ThemePreference = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
 
 interface UiState {
-  /** What the user chose. `system` means "follow the OS" and stores nothing. */
   theme: ThemePreference
-  /** What is actually painted — what `<html data-theme>` is set to. */
   resolvedTheme: ResolvedTheme
   setTheme: (theme: ThemePreference) => void
 
-  /** Desktop rail collapsed to 64px (§16). Persisted. */
   sidebarCollapsed: boolean
   toggleSidebarCollapsed: () => void
-  /** Mobile/tablet drawer. Never persisted — a reload should not reopen it. */
   sidebarDrawerOpen: boolean
   setSidebarDrawerOpen: (open: boolean) => void
 
@@ -23,7 +19,6 @@ interface UiState {
   setCommandPaletteOpen: (open: boolean) => void
   toggleCommandPalette: () => void
 
-  /** Retrieval preferences, surfaced in the composer's settings popover. */
   topK: number
   setTopK: (topK: number) => void
   streaming: boolean
@@ -44,7 +39,6 @@ function resolve(preference: ThemePreference): ResolvedTheme {
   return preference === 'system' ? systemTheme() : preference
 }
 
-/** Mirrors what the blocking script in index.html did, for later changes. */
 function applyTheme(resolved: ResolvedTheme): void {
   if (typeof document === 'undefined') return
   document.documentElement.dataset.theme = resolved
@@ -95,11 +89,6 @@ export const useUiStore = create<UiState>((set, get) => ({
   },
 }))
 
-/**
- * Keep `system` preference live: if the OS flips while the app is open and the
- * user has not made an explicit choice, follow it. Registered once at module
- * scope because it needs no cleanup for the lifetime of the document.
- */
 if (typeof window !== 'undefined' && window.matchMedia) {
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
     if (useUiStore.getState().theme !== 'system') return
@@ -109,6 +98,4 @@ if (typeof window !== 'undefined' && window.matchMedia) {
   })
 }
 
-// The bootstrap script already painted the right theme; make sure the meta
-// theme-color matches it on first load too.
 applyTheme(resolve(initialPreference))

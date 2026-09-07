@@ -19,17 +19,6 @@ import { Reveal, Stagger } from '@/components/motion'
 import { Badge, Button, Card, Container, Section } from '@/components/ui'
 import { MAX_UPLOAD_BYTES } from '@/lib/constants'
 
-/**
- * The landing page's body sections (§10.2–§10.8), kept out of `pages/Landing.tsx`
- * so the page reads as an outline of itself.
- *
- * Everything claimed here is something the running backend actually does. No
- * invented integrations, no logo wall of companies that have never used this, no
- * "trusted by 10,000 teams" — the product is new, and a landing page that lies
- * about traction is the fastest way to lose the reader who reads carefully.
- */
-
-/** The limit is one number in one place; the copy derives it. */
 const MAX_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024))
 
 const STEPS = [

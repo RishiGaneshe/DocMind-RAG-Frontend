@@ -1,6 +1,4 @@
-/* eslint-disable react-refresh/only-export-components -- this file is the route
-   table, not a component module: its exports are the router plus the lazy page
-   references, so there is no fast-refresh boundary to preserve. */
+/* eslint-disable react-refresh/only-export-components */
 import { lazy, Suspense, type ComponentType } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router'
 import {
@@ -18,18 +16,6 @@ import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 import { PublicOnlyRoute } from '@/features/auth/components/PublicOnlyRoute'
 import { Skeleton } from '@/components/ui'
 import { FEATURES } from '@/lib/constants'
-
-/**
- * The route table (§11).
- *
- * Every leaf is `React.lazy`, so the initial bundle carries the shell and the
- * route the visitor actually asked for — not the chat view, the document library
- * and the settings panes as well. Fallbacks are chosen per area: an auth card
- * skeleton inside the auth shell, a full-page one where no chrome exists yet.
- *
- * `errorElement` is attached at the root so a thrown render error or a stale
- * dynamic import lands on a real page instead of a blank screen.
- */
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -55,7 +41,6 @@ const SettingsAccount = lazy(() => import('./pages/SettingsAccount'))
 const Forbidden = lazy(() => import('./pages/Forbidden'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
-/** Wraps a lazy page in the Suspense boundary that suits its shell. */
 function authPage(Page: ComponentType) {
   return (
     <Suspense fallback={<AuthRouteFallback />}>
@@ -80,10 +65,6 @@ function appPage(Page: ComponentType) {
   )
 }
 
-/**
- * Modal and drawer routes get no fallback at all: they open over a page that is
- * already there, and a skeleton flashing on top of it reads as a glitch.
- */
 function overlayPage(Page: ComponentType) {
   return (
     <Suspense fallback={null}>
@@ -92,7 +73,6 @@ function overlayPage(Page: ComponentType) {
   )
 }
 
-/** A settings pane loads beside its rail, so only the pane area is skeletoned. */
 function panePage(Page: ComponentType) {
   return (
     <Suspense fallback={<Skeleton lines={5} className="max-w-2xl" />}>
@@ -106,7 +86,6 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <RouteError />,
     children: [
-      // ---- Public marketing pages (§10) ----
       {
         element: <MarketingLayout />,
         children: [
@@ -117,7 +96,6 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ---- Public-only: /login, /signup and the recovery screens (§13) ----
       {
         element: <AuthLayout />,
         children: [
@@ -126,9 +104,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'login', element: authPage(Login) },
               { path: 'signup', element: authPage(Signup) },
-              // Flagged off: the endpoints these need do not exist yet (§13.3).
-              // With the flag off, /login shows an honest dialog instead and
-              // these paths fall through to the 404.
               ...(FEATURES.passwordReset
                 ? [
                     { path: 'forgot-password', element: authPage(ForgotPassword) },
@@ -141,7 +116,6 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ---- Signed in, no workspace yet (§14) ----
       {
         element: (
           <ProtectedRoute
@@ -158,7 +132,6 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ---- The product (§12) ----
       {
         path: 'app',
         element: (
@@ -172,7 +145,6 @@ export const router = createBrowserRouter([
             path: 'documents',
             element: appPage(Documents),
             children: [
-              // Both render over the list, which stays mounted behind them.
               { path: 'upload', element: overlayPage(DocumentUpload) },
               { path: ':documentId', element: overlayPage(DocumentDetail) },
             ],
@@ -181,8 +153,6 @@ export const router = createBrowserRouter([
             path: 'settings',
             element: appPage(Settings),
             children: [
-              // The parent renders only chrome, so landing on /app/settings with
-              // no pane selected would show an empty rail.
               { index: true, element: <Navigate to="workspace" replace /> },
               { path: 'workspace', element: panePage(SettingsWorkspace) },
               { path: 'api-keys', element: panePage(SettingsApiKeys) },

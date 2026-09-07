@@ -4,20 +4,6 @@ import { useTenantId } from '@/stores/sessionStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useChatStore, type ChatMessage } from '../store'
 
-/**
- * Asking a question, and everything that can happen next.
- *
- * The moving parts deliberately live at module scope rather than in refs:
- * following a citation unmounts the chat page, and an answer must keep arriving
- * while the user reads the document it came from. A ref-based controller would
- * be dropped on that unmount and Stop would stop working on return.
- *
- * Tokens are coalesced. The backend emits one SSE frame per model token, and
- * dispatching each one would re-render the whole thread dozens of times a
- * second; instead they accumulate for ~50 ms and land inside a frame the
- * browser was going to paint anyway.
- */
-
 const FLUSH_MS = 50
 
 let controller: AbortController | null = null
@@ -61,7 +47,6 @@ function enqueue(id: string, content: string): void {
   }, FLUSH_MS)
 }
 
-/** Backend errors already read as sentences; anything else gets a fallback. */
 function describe(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.isNetworkError) {
@@ -73,10 +58,6 @@ function describe(error: unknown): string {
   return 'Something went wrong while answering. Try again.'
 }
 
-/**
- * Assemble last 6 conversation turns, capped to 1000 chars per turn and
- * 6000 chars cumulative, conforming to backend RAG history contract.
- */
 export function buildHistory(
   messages: ChatMessage[],
   currentAssistantId: string,
@@ -105,11 +86,6 @@ export function buildHistory(
   return history
 }
 
-/**
- * Runs one turn against the API and reports it through the reducer. Never
- * throws: every outcome is a dispatched action, which is what keeps the UI a
- * pure function of thread state.
- */
 async function run(tenantId: string, assistantId: string, query: string): Promise<void> {
   const { dispatch } = useChatStore.getState()
   const { topK, streaming } = useUiStore.getState()
@@ -149,7 +125,6 @@ async function run(tenantId: string, assistantId: string, query: string): Promis
       dispatch({ type: 'DONE', id: assistantId })
     }
   } catch (error) {
-    // Whatever arrived before the failure stays on screen (§12.4).
     flush(assistantId)
     if (isAbortError(error)) dispatch({ type: 'ABORT', id: assistantId })
     else dispatch({ type: 'ERROR', id: assistantId, error: describe(error) })
@@ -166,7 +141,6 @@ export function useChat() {
   const dispatch = useChatStore((s) => s.dispatch)
   const tenantId = useTenantId()
 
-  // Only the timers are torn down with the page — not the request. See above.
   useEffect(
     () => () => {
       if (pending.timer !== null) clearTimeout(pending.timer)
@@ -220,7 +194,6 @@ export function useChat() {
     stop,
     retry,
     clear,
-    /** False before a workspace exists — the composer explains why. */
     ready: Boolean(tenantId),
   }
 }

@@ -15,13 +15,6 @@ import { useApiKeysList } from '@/features/settings/hooks/useApiKeys'
 import { useDocumentTitle } from '@/hooks'
 import type { ApiKey } from '@/lib/api'
 
-/**
- * `/app/settings/api-keys` — Developers & API Keys Management.
- *
- * Mints publishable keys for embeddable chat widgets and secret keys for
- * backend integrations. Full CRUD, usage tracking, zero-downtime rotation,
- * and origin enforcement.
- */
 export default function SettingsApiKeysPage() {
   useDocumentTitle('API Keys')
 
@@ -41,7 +34,6 @@ export default function SettingsApiKeysPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold text-fg">API Keys</h2>
@@ -55,7 +47,6 @@ export default function SettingsApiKeysPage() {
         </Button>
       </div>
 
-      {/* Security Banner */}
       <Alert
         tone="info"
         icon={<ShieldCheck className="size-5 text-accent" />}
@@ -66,7 +57,6 @@ export default function SettingsApiKeysPage() {
         <code className="font-mono text-xs font-semibold">sk_live_</code> keys on your backend only.
       </Alert>
 
-      {/* Content */}
       {isPending ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-10 w-full" />
@@ -141,7 +131,6 @@ export default function SettingsApiKeysPage() {
         </div>
       )}
 
-      {/* Modals */}
       <ApiKeyCreateModal
         open={createOpen}
         onOpenChange={setCreateOpen}

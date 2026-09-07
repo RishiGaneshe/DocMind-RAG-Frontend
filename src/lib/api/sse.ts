@@ -3,18 +3,7 @@ import { tokenStorage } from '../tokenStorage'
 import { ApiError, expireSession, refreshTokens, toApiError } from './client'
 import { sseChunkSchema, sseErrorSchema, sseSourcesSchema, type Source } from './types'
 
-/**
- * Server-sent events over `fetch`, by hand.
- *
- * `EventSource` cannot do either of the two things this endpoint needs: send a
- * POST body, or attach an Authorization header. So the stream is read off
- * `response.body` and the frames are parsed here. The backend writes
- * `event: <name>\ndata: <json>\n\n` (src/api/query.js), which is a small,
- * well-defined subset of the SSE grammar.
- */
-
 export interface StreamCallbacks {
-  /** Fired once, before the first token — the sources panel renders early. */
   onSources?: (payload: {
     sources: Source[]
     query?: string
@@ -23,9 +12,7 @@ export interface StreamCallbacks {
     chunksUsed: number
   }) => void
   onToken: (content: string) => void
-  /** The backend sent `event: done`. */
   onDone?: () => void
-  /** The stream ended before `done` arrived (e.g. dropped connection). */
   onIncomplete?: () => void
 }
 
@@ -72,7 +59,6 @@ function openStream(
   })
 }
 
-/** `event:`/`data:` pairs, one frame per blank-line-separated block. */
 function parseFrame(raw: string): { event: string; data: string } | null {
   let event = 'message'
   const dataLines: string[] = []
@@ -82,7 +68,6 @@ function parseFrame(raw: string): { event: string; data: string } | null {
     if (!clean || clean.startsWith(':')) continue
     const colon = clean.indexOf(':')
     const field = colon === -1 ? clean : clean.slice(0, colon)
-    // A single leading space after the colon is part of the framing, not data.
     let value = colon === -1 ? '' : clean.slice(colon + 1)
     if (value.startsWith(' ')) value = value.slice(1)
 
@@ -94,14 +79,6 @@ function parseFrame(raw: string): { event: string; data: string } | null {
   return { event, data: dataLines.join('\n') }
 }
 
-/**
- * Consumes the stream, calling back per frame. Resolves when the stream ends.
- *
- * Throws `ApiError` on a transport or backend failure and rethrows the
- * `AbortError` when the caller stops generation — in both cases the tokens
- * already delivered through `onToken` stay on screen, which is what makes the
- * "partial answer + Retry" state possible (§12.4).
- */
 export async function streamQuery(
   tenantId: string,
   input: StreamInput,
@@ -194,8 +171,6 @@ export async function streamQuery(
 
       buffer += decoder.decode(value, { stream: true })
 
-      // Frames are separated by a blank line; anything after the last one is a
-      // partial frame and stays in the buffer until the next read.
       let boundary = buffer.indexOf('\n\n')
       while (boundary !== -1) {
         const raw = buffer.slice(0, boundary)
@@ -212,7 +187,6 @@ export async function streamQuery(
     if (tail && !failure.error) handle(tail)
   } finally {
     reader.releaseLock()
-    // Stop the server generating tokens nobody will read.
     if (!input.signal?.aborted) await body.cancel().catch(() => undefined)
   }
 

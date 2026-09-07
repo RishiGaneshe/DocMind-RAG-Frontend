@@ -21,17 +21,6 @@ import { formatDateTime } from '@/lib/utils'
 import { useSessionStore } from '@/stores/sessionStore'
 import { useUiStore } from '@/stores/uiStore'
 
-/**
- * `/app/settings/account` — the signed-in user, plus the two controls that do
- * work: theme and sign out.
- *
- * Editing a name or email would need `PATCH /api/auth/me`, and changing a
- * password would need `POST /api/auth/change-password`; neither exists, so both
- * are named as gaps instead of being mocked up.
- *
- * Sign out is confirmed because it discards the current thread — chat history is
- * in memory only, and there is no endpoint to restore it.
- */
 export default function SettingsAccountPage() {
   useDocumentTitle('Account')
 

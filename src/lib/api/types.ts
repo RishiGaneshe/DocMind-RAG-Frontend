@@ -1,23 +1,11 @@
 import { z } from 'zod'
 
-/**
- * Runtime-validated mirrors of Express backend responses.
- *
- * Every response the app depends on is parsed, not cast: a backend change that
- * drops a field surfaces as one legible error at the boundary instead of an
- * `undefined` three components deep. Unknown keys are stripped, so the server
- * can add fields freely.
- */
-
-/* --- Auth & User --------------------------------------------------------- */
-
 export const roleSchema = z.enum(['owner', 'member'])
 
 export const tenantSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
-  /** Only present on /auth/me and /tenants/me — never in the JWT. */
   apiKey: z.string().optional(),
   ownerId: z.string().optional(),
   widgetConfig: z.record(z.string(), z.unknown()).optional(),
@@ -36,7 +24,6 @@ export const userSchema = z.object({
   lastLoginAt: z.string().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
-  /** getUserProfile() eager-loads the workspace; login/signup do not. */
   tenant: tenantSchema.nullable().optional(),
 })
 
@@ -64,7 +51,6 @@ export const messageResponseSchema = z.object({
   message: z.string().optional(),
 })
 
-/** POST /api/tenants reissues both tokens with tenantId baked in. */
 export const createTenantResponseSchema = z.object({
   success: z.literal(true),
   message: z.string().optional(),
@@ -78,15 +64,12 @@ export const tenantMeResponseSchema = z.object({
   tenant: tenantSchema,
 })
 
-/* --- Documents ----------------------------------------------------------- */
-
 export const documentStatusSchema = z.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'])
 
 export const documentSchema = z.object({
   id: z.string(),
   filename: z.string(),
   mimeType: z.string(),
-  /** Sequelize INTEGER arrives as a number; be tolerant of a stringified one. */
   fileSize: z.coerce.number(),
   totalChunks: z.coerce.number(),
   numPages: z.coerce.number().nullable().optional(),
@@ -117,12 +100,6 @@ export const deleteDocumentResponseSchema = z.object({
   chunksDeleted: z.coerce.number().optional(),
 })
 
-/**
- * Upload responses:
- * - 202 Accepted: async processing queued
- * - 200 OK: duplicate file by SHA-256
- * - legacy synchronous fallback
- */
 export const uploadResponseSchema = z.object({
   success: z.literal(true),
   message: z.string().optional(),
@@ -133,14 +110,11 @@ export const uploadResponseSchema = z.object({
   queuePosition: z.coerce.number().optional(),
   duplicate: z.boolean().optional(),
   document: documentSchema.optional(),
-  // Legacy fields tolerated if present
   chunksProcessed: z.coerce.number().optional(),
   chunksSkipped: z.coerce.number().optional(),
   totalChunks: z.coerce.number().optional(),
   pages: z.coerce.number().optional(),
 })
-
-/* --- Query & Retrieval --------------------------------------------------- */
 
 export const sourceSchema = z.object({
   citation: z.coerce.number().optional(),
@@ -154,7 +128,6 @@ export const sourceSchema = z.object({
   snippet: z.string(),
 })
 
-/** Non-streaming POST …/query. */
 export const queryResponseSchema = z.object({
   success: z.literal(true),
   answer: z.string(),
@@ -168,8 +141,6 @@ export const queryResponseSchema = z.object({
   cached: z.boolean().optional(),
 })
 
-/* --- SSE frame payloads -------------------------------------------------- */
-
 export const sseSourcesSchema = z.object({
   sources: z.array(sourceSchema),
   query: z.string().optional(),
@@ -181,8 +152,6 @@ export const sseSourcesSchema = z.object({
 export const sseChunkSchema = z.object({ content: z.string() })
 export const sseDoneSchema = z.object({ success: z.boolean().optional() })
 export const sseErrorSchema = z.object({ error: z.string() })
-
-/* --- API Keys ------------------------------------------------------------ */
 
 export const apiKeyTypeSchema = z.enum(['public', 'secret'])
 export const apiKeyStatusSchema = z.enum(['active', 'revoked', 'expired'])
@@ -247,8 +216,6 @@ export const rotateApiKeyResponseSchema = z.object({
   previous: apiKeySchema,
 })
 
-/* --- Widget Configuration ------------------------------------------------ */
-
 export const sourceModeSchema = z.enum(['full', 'labels', 'hidden'])
 
 export const widgetConfigSchema = z.object({
@@ -271,8 +238,6 @@ export const widgetResponseSchema = z.object({
   sourceModes: z.array(sourceModeSchema).optional(),
 })
 
-/* --- Public API Surface -------------------------------------------------- */
-
 export const publicConfigResponseSchema = z.object({
   success: z.literal(true),
   workspace: z.object({ name: z.string() }),
@@ -294,8 +259,6 @@ export const publicChatResponseSchema = z.object({
   chunksUsed: z.coerce.number().optional(),
 })
 
-/* --- Errors -------------------------------------------------------------- */
-
 export const errorResponseSchema = z.object({
   success: z.literal(false).optional(),
   error: z.union([z.string(), z.object({ message: z.string().optional() })]).optional(),
@@ -303,8 +266,6 @@ export const errorResponseSchema = z.object({
   retryAfterSeconds: z.coerce.number().optional(),
   path: z.string().optional(),
 })
-
-/* --- Inferred Types ------------------------------------------------------ */
 
 export type Role = z.infer<typeof roleSchema>
 export type Tenant = z.infer<typeof tenantSchema>

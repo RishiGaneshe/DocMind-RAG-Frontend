@@ -2,13 +2,6 @@ import { Alert } from '@/components/ui'
 import { LegalDoc, LegalSection } from '@/features/marketing/components'
 import { useDocumentTitle } from '@/hooks'
 
-/**
- * `/legal/terms`.
- *
- * Short on purpose. The two clauses that actually matter for a retrieval product
- * are "you own what you upload" and "an answer is evidence, not advice", so they
- * come first and are not buried in capitals.
- */
 export default function LegalTermsPage() {
   useDocumentTitle('Terms')
 

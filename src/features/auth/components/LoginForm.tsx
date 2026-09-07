@@ -12,15 +12,6 @@ import { ForgotPasswordDialog } from './ForgotPasswordDialog'
 import { PasswordField } from './PasswordField'
 import { safeNext } from './PublicOnlyRoute'
 
-/**
- * Sign-in (§13.1).
- *
- * Submit is never disabled on invalid input: a greyed-out button does not say
- * *why* it cannot be pressed, whereas a submit that reveals the field errors
- * does. And the 401 message is deliberately identical for "no such user" and
- * "wrong password" — anything else is an account-enumeration oracle.
- */
-
 type Banner = { tone: 'error' | 'warning'; title: string; message: string; retry?: boolean }
 
 export function LoginForm() {
@@ -34,7 +25,6 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
     mode: 'onBlur',
     defaultValues: {
-      // Carried over from the signup page's "sign in instead" link.
       email: params.get('email') ?? '',
       password: '',
       remember: true,
@@ -48,8 +38,6 @@ export function LoginForm() {
     try {
       const { user } = await login.mutateAsync(values)
       const next = safeNext(params.get('next'))
-      // A user with no workspace cannot land in /app — it would bounce them
-      // straight to onboarding anyway, so send them there directly.
       await navigate(user.tenantId ? (next ?? '/app') : '/onboarding/workspace', { replace: true })
     } catch (error) {
       if (!(error instanceof ApiError)) {
@@ -160,7 +148,6 @@ export function LoginForm() {
               Forgot password?
             </Link>
           ) : (
-            // No endpoint exists yet, so an honest dialog beats a dead form.
             <ForgotPasswordDialog />
           )}
         </div>

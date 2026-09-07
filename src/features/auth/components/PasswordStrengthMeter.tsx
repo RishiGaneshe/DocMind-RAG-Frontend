@@ -2,16 +2,6 @@ import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { PASSWORD_MIN } from '@/lib/constants'
 
-/**
- * Advisory only — it never blocks submission (§13.2).
- *
- * The scoring is deliberately transparent rather than clever: one point each
- * for length, mixed case, a digit and a symbol. A dictionary-based estimator
- * would be more accurate, but it would also be a 400 kB dependency on the
- * critical path of the signup page, and the backend's real rule is "at least
- * eight characters".
- */
-
 const LEVELS = [
   { label: 'Too short', bar: 'bg-error', text: 'text-error' },
   { label: 'Weak', bar: 'bg-error', text: 'text-error' },

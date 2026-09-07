@@ -9,15 +9,6 @@ import { Markdown } from './Markdown'
 import { SourcesDisclosure } from './SourcesDisclosure'
 import { StreamingCursor, TypingIndicator } from './StreamingIndicator'
 
-/**
- * One turn in the thread.
- *
- * The two roles are shaped differently on purpose. A question is short and
- * belongs in a bubble; an answer is prose with citations and needs the full
- * measure, so it is laid out as a block rather than a mirrored bubble. That
- * asymmetry is also what makes the thread scannable without reading it.
- */
-
 function clockTime(createdAt: number): string {
   return new Date(createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 }
@@ -39,7 +30,6 @@ function UserMessage({ message }: { message: ChatMessage }) {
       <div
         className={cn(
           'max-w-[85%] rounded-2xl rounded-br-sm border border-accent/25 bg-accent-wash px-3.5 py-2.5',
-          // The query is plain text, so newlines are preserved rather than parsed.
           'text-sm leading-relaxed whitespace-pre-wrap text-fg wrap-anywhere',
         )}
       >
@@ -60,8 +50,6 @@ function AssistantMessage({
   const { copy, copied } = useCopyToClipboard()
   const streaming = message.status === 'streaming'
   const hasText = message.content.trim().length > 0
-  // ragEngine.js returns this exact sentence when nothing cleared the score
-  // threshold. Treated as a state, not as an answer.
   const noContext = !streaming && message.content.trim().startsWith(NO_CONTEXT_ANSWER)
 
   return (
@@ -149,8 +137,6 @@ function AssistantMessage({
           </div>
         )}
 
-        {/* Kept out of the tab order until the turn is finished — a control that
-            appears mid-stream would move focus targets while people read. */}
         {!streaming && hasText && !noContext && (
           <div className="mt-1 -ml-2 flex items-center gap-1 opacity-0 transition-opacity duration-(--dur-fast) focus-within:opacity-100 group-hover:opacity-100">
             <Button

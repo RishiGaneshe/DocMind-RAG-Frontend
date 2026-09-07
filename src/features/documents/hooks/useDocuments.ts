@@ -14,7 +14,6 @@ export function useDocuments() {
     queryKey: tenantId ? queryKeys.documents.list(tenantId) : queryKeys.documents.all,
     queryFn: ({ signal }) => listDocuments(tenantId as string, signal),
     enabled: Boolean(tenantId),
-    // Auto-poll the list every 3 seconds if any document is currently being ingested
     refetchInterval: (query) => {
       const docs = query.state.data ?? []
       const hasBusy = docs.some((d) => d.status === 'PENDING' || d.status === 'PROCESSING')
@@ -29,7 +28,6 @@ export function useDocuments() {
   }
 }
 
-/** Header counters. Derived, never stored — the list is the source of truth. */
 export function useDocumentStats(documents: DocumentRecord[]) {
   return useMemo(() => {
     let bytes = 0
@@ -50,10 +48,6 @@ export function useDocumentStats(documents: DocumentRecord[]) {
   }, [documents])
 }
 
-/**
- * One document, backed by GET /api/tenants/:tenantId/documents/:documentId with
- * fallback to the list cache and live polling while processing.
- */
 export function useDocument(documentId: string | undefined) {
   const tenantId = useTenantId()
   const { documents } = useDocuments()
@@ -78,7 +72,6 @@ export function useDocument(documentId: string | undefined) {
     },
   })
 
-  // When detail status transitions to COMPLETED or FAILED, invalidate the list query
   const document = query.data ?? cachedFromList
 
   return {

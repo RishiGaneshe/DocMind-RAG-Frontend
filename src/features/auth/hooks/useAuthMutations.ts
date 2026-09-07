@@ -11,11 +11,6 @@ import { queryClient } from '@/lib/queryClient'
 import { useSessionStore } from '@/stores/sessionStore'
 import type { LoginValues, SignupValues } from '../schemas'
 
-/**
- * One hook per auth action. Each owns the request and the session write;
- * navigation stays in the page, because only the page knows where "next" is.
- */
-
 export function useLogin() {
   const signIn = useSessionStore((s) => s.signIn)
 
@@ -23,7 +18,6 @@ export function useLogin() {
     mutationFn: ({ email, password }) => login({ email, password }),
     onSuccess: (payload, values) => {
       signIn(payload, values.remember)
-      // Nothing from the previous session should survive into this one.
       queryClient.clear()
     },
   })
@@ -36,8 +30,6 @@ export function useSignup() {
     mutationFn: ({ firstName, lastName, email, password }) =>
       signup({ firstName, lastName, email, password }),
     onSuccess: (payload) => {
-      // A new account is a deliberate, long-lived intent: persist it. The user
-      // can still sign out, and /app/settings/account exposes the session.
       signIn(payload, true)
       queryClient.clear()
     },
@@ -54,14 +46,12 @@ export function useLogout() {
   })
 }
 
-/** ⚠ Requires POST /api/auth/forgot-password (§13.3) — flagged off by default. */
 export function useForgotPassword() {
   return useMutation<void, Error, { email: string }>({
     mutationFn: ({ email }) => requestPasswordReset(email),
   })
 }
 
-/** ⚠ Requires POST /api/auth/reset-password (§13.3) — flagged off by default. */
 export function useResetPassword() {
   return useMutation<void, Error, { token: string; password: string }>({
     mutationFn: ({ token, password }) => resetPassword(token, password),

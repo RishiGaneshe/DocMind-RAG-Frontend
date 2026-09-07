@@ -19,13 +19,6 @@ import { useDocument } from '@/features/documents/hooks/useDocuments'
 import { useCopyToClipboard, useDocumentTitle } from '@/hooks'
 import { formatBytes, formatDateTime, formatNumber, formatRelativeTime, stripExtension } from '@/lib/utils'
 
-/**
- * `/app/documents/:documentId` — one document.
- *
- * A drawer over the list on desktop and a full-screen panel below `lg`.
- * Fetches real document details directly with live polling when status is
- * PENDING or PROCESSING.
- */
 export default function DocumentDetailPage() {
   const { documentId } = useParams()
   const [params] = useSearchParams()

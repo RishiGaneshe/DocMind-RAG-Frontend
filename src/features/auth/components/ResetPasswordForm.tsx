@@ -11,13 +11,6 @@ import { AuthCard, AuthFooterLink } from './AuthCard'
 import { PasswordField } from './PasswordField'
 import { PasswordStrengthMeter } from './PasswordStrengthMeter'
 
-/**
- * Choose a new password (§13.3). Feature-flagged alongside ForgotPasswordForm.
- *
- * The token lives in the query string, so the whole screen has to cope with it
- * being absent, malformed or expired — three states that all resolve to "start
- * again", with a link that actually does.
- */
 export function ResetPasswordForm() {
   const [params] = useSearchParams()
   const navigate = useNavigate()

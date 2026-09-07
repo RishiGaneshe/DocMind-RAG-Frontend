@@ -21,7 +21,6 @@ const VARIANTS: Record<ButtonVariant, string> = {
 }
 
 const SIZES: Record<ButtonSize, string> = {
-  // 44px minimum touch target at md/lg (§16); sm is for dense desktop toolbars.
   sm: 'h-9 px-3 text-sm',
   md: 'h-11 px-4 text-sm',
   lg: 'h-12 px-6 text-base',
@@ -34,16 +33,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
   fullWidth?: boolean
-  /** Render the single child instead of a <button> — for <Link> CTAs. */
   asChild?: boolean
   ref?: React.Ref<HTMLButtonElement>
 }
 
-/**
- * `loading` sets `aria-busy`, keeps the label mounted (so screen readers do not
- * lose it mid-request) and overlays the spinner, which means the button's width
- * never changes and the layout cannot jump.
- */
 export function Button({
   variant = 'primary',
   size = 'md',

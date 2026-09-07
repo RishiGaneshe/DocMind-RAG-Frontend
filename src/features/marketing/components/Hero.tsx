@@ -3,14 +3,6 @@ import { Link } from 'react-router'
 import { FadeIn, OrbBackdrop } from '@/components/motion'
 import { Badge, Button, Container } from '@/components/ui'
 
-/**
- * The landing hero (§10.1).
- *
- * The visual is a hand-built static mock, not a screenshot: it stays legible at
- * 320 px, it themes with the rest of the page, and it cannot go stale when the
- * product's chrome changes. It is `aria-hidden` — everything it says is already
- * in the copy beside it, and reading a decorative transcript aloud is noise.
- */
 export function Hero() {
   return (
     <section className="relative overflow-hidden pt-14 pb-16 sm:pt-20 sm:pb-24">

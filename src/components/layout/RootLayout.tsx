@@ -7,17 +7,6 @@ import { SessionExpiredDialog } from '@/features/auth/components/SessionExpiredD
 import { useSessionBootstrap } from '@/features/auth/hooks/useSession'
 import { queryClient } from '@/lib/queryClient'
 
-/**
- * Everything every route needs, mounted once.
- *
- * The session probe starts here rather than in a guard, so a public page and a
- * protected one both know who the visitor is by the time they paint — that is
- * what lets the landing header show "Go to workspace" instead of "Start free"
- * without a flash.
- *
- * `reducedMotion="user"` is set once for the whole app (§17.3); no component
- * below this point checks the media query in order to animate correctly.
- */
 export function RootLayout() {
   useSessionBootstrap()
 
@@ -32,8 +21,6 @@ export function RootLayout() {
           <Outlet />
 
           <Toaster />
-          {/* Re-authentication happens over the top of whatever is on screen,
-              never by redirecting away from it (§11.1). */}
           <SessionExpiredDialog />
           <ScrollRestoration />
         </TooltipProvider>
