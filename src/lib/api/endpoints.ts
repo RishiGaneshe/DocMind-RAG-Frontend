@@ -1,25 +1,45 @@
-import { apiRequest } from './client'
+import { ApiError, apiRequest } from './client'
+import { API_BASE_URL } from '../constants'
+import { isValidUuid } from '../utils'
 import {
+  apiKeyListResponseSchema,
   authResponseSchema,
+  createApiKeyResponseSchema,
   createTenantResponseSchema,
+  deleteDocumentResponseSchema,
+  documentDetailResponseSchema,
   documentsResponseSchema,
+  keyUsageResponseSchema,
   meResponseSchema,
   messageResponseSchema,
+  publicChatResponseSchema,
+  publicConfigResponseSchema,
   queryResponseSchema,
+  rotateApiKeyResponseSchema,
   tenantMeResponseSchema,
+  widgetResponseSchema,
+  type ApiKey,
+  type ApiKeyDefaults,
+  type ApiKeyUsage,
+  type CreateApiKeyResult,
+  type DeleteDocumentResult,
+  type DocumentDetailResponse,
   type DocumentRecord,
+  type PublicChatResult,
+  type PublicConfig,
   type QueryResult,
+  type RotateApiKeyResult,
   type Tenant,
   type User,
+  type WidgetConfig,
+  type WidgetResponse,
 } from './types'
 
 /**
  * One function per backend route, named after the intent rather than the verb.
  *
  * Paths are written out in full so `grep '/api/tenants'` finds every caller.
- * Documents and query are nested under the tenant (see src/app.js) — passing
- * the wrong tenantId gets a 403 TENANT_MISMATCH from requireTenant, which the
- * UI surfaces as a session problem rather than a 404.
+ * Documents, query, api-keys and widget are nested under the tenant.
  */
 
 /* --- Auth ---------------------------------------------------------------- */
@@ -62,11 +82,6 @@ export async function login(input: LoginInput): Promise<AuthPayload> {
   return { user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }
 }
 
-/**
- * Revokes the refresh token server-side. Best-effort: the UI clears local
- * credentials whether or not this succeeds, so a network failure can never
- * leave someone stuck in a session they asked to leave.
- */
 export async function logout(refreshToken: string): Promise<void> {
   await apiRequest('/auth/logout', {
     method: 'POST',
@@ -75,7 +90,6 @@ export async function logout(refreshToken: string): Promise<void> {
   })
 }
 
-/** The session probe on boot. Eager-loads `user.tenant`, unlike login/signup. */
 export async function getCurrentUser(signal?: AbortSignal): Promise<User> {
   const data = await apiRequest('/auth/me', { schema: meResponseSchema, signal })
   return data.user
@@ -88,11 +102,6 @@ export interface CreateTenantInput {
   slug: string
 }
 
-/**
- * Creating a workspace mints new tokens with `tenantId` baked into the JWT —
- * the old access token has no tenant claim and would 403 on every document and
- * query route, so the caller must store this pair immediately.
- */
 export async function createTenant(input: CreateTenantInput): Promise<{
   tenant: Tenant
   accessToken: string
@@ -106,7 +115,6 @@ export async function createTenant(input: CreateTenantInput): Promise<{
   return { tenant: data.tenant, accessToken: data.accessToken, refreshToken: data.refreshToken }
 }
 
-/** 404 here means "no workspace yet", which is a normal state, not an error. */
 export async function getMyTenant(signal?: AbortSignal): Promise<Tenant> {
   const data = await apiRequest('/tenants/me', { schema: tenantMeResponseSchema, signal })
   return data.tenant
@@ -125,38 +133,228 @@ export async function listDocuments(
   return data.documents
 }
 
+export async function getDocument(
+  tenantId: string,
+  documentId: string,
+  signal?: AbortSignal,
+): Promise<DocumentDetailResponse> {
+  if (!isValidUuid(documentId)) {
+    throw new ApiError('Invalid document ID format', 400, 'INVALID_DOCUMENT_ID')
+  }
+  return apiRequest(`/tenants/${tenantId}/documents/${documentId}`, {
+    schema: documentDetailResponseSchema,
+    signal,
+  })
+}
+
+export async function deleteDocument(
+  tenantId: string,
+  documentId: string,
+): Promise<DeleteDocumentResult> {
+  if (!isValidUuid(documentId)) {
+    throw new ApiError('Invalid document ID format', 400, 'INVALID_DOCUMENT_ID')
+  }
+  return apiRequest(`/tenants/${tenantId}/documents/${documentId}`, {
+    method: 'DELETE',
+    schema: deleteDocumentResponseSchema,
+  })
+}
+
 /* --- Query --------------------------------------------------------------- */
+
+export interface ChatHistoryTurn {
+  role: 'user' | 'assistant'
+  content: string
+}
 
 export interface AskInput {
   query: string
   topK?: number
+  documentIds?: string[]
+  history?: ChatHistoryTurn[]
   signal?: AbortSignal
 }
 
-/**
- * Non-streaming answer. Used when the user turns streaming off, and as the
- * fallback path when the SSE transport cannot start (§20.2).
- */
-export async function ask(tenantId: string, { query, topK, signal }: AskInput): Promise<QueryResult> {
+export async function ask(tenantId: string, input: AskInput): Promise<QueryResult> {
+  const { query, topK, documentIds, history, signal } = input
+  const body: Record<string, unknown> = { query }
+  if (topK !== undefined) body.topK = topK
+  if (documentIds && documentIds.length > 0) body.documentIds = documentIds
+  if (history && history.length > 0) body.history = history
+
   return apiRequest(`/tenants/${tenantId}/query`, {
     method: 'POST',
-    body: { query, ...(topK === undefined ? {} : { topK }) },
+    body,
     schema: queryResponseSchema,
     signal,
   })
 }
 
+/* --- API Keys ------------------------------------------------------------ */
+
+export interface CreateApiKeyInput {
+  name: string
+  type?: 'public' | 'secret'
+  scopes?: string[]
+  allowedOrigins?: string[]
+  rateLimitPerMinute?: number | null
+  dailyQuota?: number | null
+}
+
+export interface UpdateApiKeyInput {
+  name?: string
+  scopes?: string[]
+  allowedOrigins?: string[]
+  rateLimitPerMinute?: number | null
+  dailyQuota?: number | null
+}
+
+export async function listApiKeys(
+  tenantId: string,
+  signal?: AbortSignal,
+): Promise<{ apiKeys: ApiKey[]; scopes: string[]; defaults: ApiKeyDefaults }> {
+  return apiRequest(`/tenants/${tenantId}/api-keys`, {
+    schema: apiKeyListResponseSchema,
+    signal,
+  })
+}
+
+export async function createApiKey(
+  tenantId: string,
+  input: CreateApiKeyInput,
+): Promise<CreateApiKeyResult> {
+  return apiRequest(`/tenants/${tenantId}/api-keys`, {
+    method: 'POST',
+    body: input,
+    schema: createApiKeyResponseSchema,
+  })
+}
+
+export async function getKeyUsage(
+  tenantId: string,
+  keyId: string,
+  signal?: AbortSignal,
+): Promise<ApiKeyUsage> {
+  if (!isValidUuid(keyId)) {
+    throw new ApiError('Invalid key ID format', 400, 'INVALID_KEY_ID')
+  }
+  const data = await apiRequest(`/tenants/${tenantId}/api-keys/${keyId}/usage`, {
+    schema: keyUsageResponseSchema,
+    signal,
+  })
+  return data.usage
+}
+
+export async function updateApiKey(
+  tenantId: string,
+  keyId: string,
+  input: UpdateApiKeyInput,
+): Promise<ApiKey> {
+  if (!isValidUuid(keyId)) {
+    throw new ApiError('Invalid key ID format', 400, 'INVALID_KEY_ID')
+  }
+  const res = await apiRequest(`/tenants/${tenantId}/api-keys/${keyId}`, {
+    method: 'PATCH',
+    body: input,
+  })
+  return (res as { apiKey: ApiKey }).apiKey
+}
+
+export async function rotateApiKey(
+  tenantId: string,
+  keyId: string,
+  input?: { graceHours?: number },
+): Promise<RotateApiKeyResult> {
+  if (!isValidUuid(keyId)) {
+    throw new ApiError('Invalid key ID format', 400, 'INVALID_KEY_ID')
+  }
+  return apiRequest(`/tenants/${tenantId}/api-keys/${keyId}/rotate`, {
+    method: 'POST',
+    body: input ?? {},
+    schema: rotateApiKeyResponseSchema,
+  })
+}
+
+export async function deleteApiKey(tenantId: string, keyId: string): Promise<ApiKey> {
+  if (!isValidUuid(keyId)) {
+    throw new ApiError('Invalid key ID format', 400, 'INVALID_KEY_ID')
+  }
+  const res = await apiRequest(`/tenants/${tenantId}/api-keys/${keyId}`, {
+    method: 'DELETE',
+  })
+  return (res as { apiKey: ApiKey }).apiKey
+}
+
+/* --- Widget Configuration ------------------------------------------------ */
+
+export async function getWidgetConfig(
+  tenantId: string,
+  signal?: AbortSignal,
+): Promise<WidgetResponse> {
+  return apiRequest(`/tenants/${tenantId}/widget`, {
+    schema: widgetResponseSchema,
+    signal,
+  })
+}
+
+export async function updateWidgetConfig(
+  tenantId: string,
+  input: Partial<WidgetConfig>,
+): Promise<WidgetResponse> {
+  return apiRequest(`/tenants/${tenantId}/widget`, {
+    method: 'PUT',
+    body: input,
+    schema: widgetResponseSchema,
+  })
+}
+
+/* --- Public API (Widget surface) ----------------------------------------- */
+
+export async function getPublicConfig(apiKey: string, signal?: AbortSignal): Promise<PublicConfig> {
+  const response = await fetch(`${API_BASE_URL}/public/config`, {
+    headers: { 'X-Api-Key': apiKey },
+    signal,
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new Error(body?.error || `Failed to fetch public config (${response.status})`)
+  }
+  return publicConfigResponseSchema.parse(body)
+}
+
+export interface PublicChatInput {
+  query: string
+  sessionId?: string
+  history?: ChatHistoryTurn[]
+  documentIds?: string[]
+  signal?: AbortSignal
+}
+
+export async function sendPublicChat(
+  apiKey: string,
+  input: PublicChatInput,
+): Promise<PublicChatResult> {
+  const response = await fetch(`${API_BASE_URL}/public/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+    body: JSON.stringify({
+      query: input.query,
+      sessionId: input.sessionId,
+      history: input.history,
+      documentIds: input.documentIds,
+      stream: false,
+    }),
+    signal: input.signal,
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new Error(body?.error || `Public chat failed (${response.status})`)
+  }
+  return publicChatResponseSchema.parse(body)
+}
+
 /* --- Password recovery (contract only) ----------------------------------- */
 
-/**
- * These two routes DO NOT EXIST on the server yet (§13.3, §22 item 8). They are
- * written against the agreed contract and reached only when
- * `VITE_FEATURE_PASSWORD_RESET` is on, so the UI can be built and reviewed now
- * and wiring it later is a backend change, not a frontend one.
- *
- *   POST /api/auth/forgot-password  { email }           → 200 always
- *   POST /api/auth/reset-password   { token, password } → 200 | 400 | 410
- */
 export async function requestPasswordReset(email: string): Promise<void> {
   await apiRequest('/auth/forgot-password', {
     method: 'POST',

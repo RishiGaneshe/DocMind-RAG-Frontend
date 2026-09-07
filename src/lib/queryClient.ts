@@ -60,5 +60,17 @@ export const queryKeys = {
   documents: {
     all: ['documents'] as const,
     list: (tenantId: string) => ['documents', 'list', tenantId] as const,
+    detail: (tenantId: string, documentId: string) =>
+      ['documents', 'detail', tenantId, documentId] as const,
+  },
+  apiKeys: {
+    all: ['api-keys'] as const,
+    list: (tenantId: string) => ['api-keys', 'list', tenantId] as const,
+    usage: (tenantId: string, keyId: string) => ['api-keys', 'usage', tenantId, keyId] as const,
+  },
+  widget: {
+    all: ['widget'] as const,
+    config: (tenantId: string) => ['widget', 'config', tenantId] as const,
   },
 } as const
+

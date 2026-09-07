@@ -1,11 +1,11 @@
-import { KeyRound, Building2, User, Users } from 'lucide-react'
+import { KeyRound, Building2, MessageSquare, User, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 import { Container } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks'
 import { cn } from '@/lib/utils'
 
 /**
- * `/app/settings` — the parent of the four panes (§12.8).
+ * `/app/settings` — the parent of the settings panes.
  *
  * The panes are routes, not tabs in local state, so a link to the API key pane
  * works and the back button behaves. `NavLink` supplies `aria-current="page"`,
@@ -14,7 +14,8 @@ import { cn } from '@/lib/utils'
 
 const PANES = [
   { to: '/app/settings/workspace', label: 'Workspace', icon: <Building2 /> },
-  { to: '/app/settings/api-keys', label: 'API key', icon: <KeyRound /> },
+  { to: '/app/settings/api-keys', label: 'API keys', icon: <KeyRound /> },
+  { to: '/app/settings/widget', label: 'Chat widget', icon: <MessageSquare /> },
   { to: '/app/settings/members', label: 'Members', icon: <Users /> },
   { to: '/app/settings/account', label: 'Account', icon: <User /> },
 ]

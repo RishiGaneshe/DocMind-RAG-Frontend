@@ -7,24 +7,20 @@ import { cn } from '@/lib/utils'
 /**
  * One retrieved chunk, as a citation.
  *
- * The whole card is the link — a citation whose only target is a small "open"
- * affordance is a citation people do not follow. `?chunk=` is carried through so
- * the document view can scroll to and highlight the passage that was quoted.
- *
- * The relevance figure is written as text and the bar is decorative: a score is
- * information, and a bar alone cannot be read aloud.
+ * The whole card is the link. Displays the citation number `[1]`, document
+ * filename, page number, breadcrumb, and relevance score / scoreType.
  */
 
 interface SourceCardProps {
   source: Source
-  /** From the documents cache; the id is the fallback while the list loads. */
+  /** From the documents cache; fallback if source.filename is absent. */
   filename?: string
   className?: string
 }
 
 export function SourceCard({ source, filename, className }: SourceCardProps) {
   const percent = Math.round(Math.max(0, Math.min(1, source.relevanceScore)) * 100)
-  const label = filename ?? 'Document'
+  const label = source.filename ?? filename ?? 'Document'
 
   return (
     <Link
@@ -37,12 +33,23 @@ export function SourceCard({ source, filename, className }: SourceCardProps) {
       )}
     >
       <div className="flex min-w-0 items-center gap-2">
+        {source.citation !== undefined && (
+          <span className="grid size-5 shrink-0 place-items-center rounded bg-accent-wash font-mono text-xs font-semibold text-accent">
+            [{source.citation}]
+          </span>
+        )}
         <FileText aria-hidden="true" className="size-4 shrink-0 text-fg-muted" />
         <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{label}</span>
-        <Badge tone="neutral" className="shrink-0 font-mono">
-          Chunk {source.chunkIndex}
-        </Badge>
+        {source.page !== null && source.page !== undefined && (
+          <Badge tone="neutral" className="shrink-0 font-mono text-xs">
+            p. {source.page}
+          </Badge>
+        )}
       </div>
+
+      {source.breadcrumb && (
+        <span className="truncate text-xs text-fg-muted">{source.breadcrumb}</span>
+      )}
 
       <div className="flex items-center gap-2">
         <span
@@ -52,7 +59,7 @@ export function SourceCard({ source, filename, className }: SourceCardProps) {
           <span className="block h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
         </span>
         <span className="shrink-0 font-mono text-xs tabular-nums text-fg-muted">
-          {percent}% match
+          {percent}% match {source.scoreType ? `· ${source.scoreType}` : ''}
         </span>
       </div>
 

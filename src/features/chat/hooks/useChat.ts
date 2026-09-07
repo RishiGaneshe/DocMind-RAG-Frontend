@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { ApiError, ask, isAbortError, streamQuery } from '@/lib/api'
 import { useTenantId } from '@/stores/sessionStore'
 import { useUiStore } from '@/stores/uiStore'
-import { useChatStore } from '../store'
+import { useChatStore, type ChatMessage } from '../store'
 
 /**
  * Asking a question, and everything that can happen next.
@@ -74,6 +74,38 @@ function describe(error: unknown): string {
 }
 
 /**
+ * Assemble last 6 conversation turns, capped to 1000 chars per turn and
+ * 6000 chars cumulative, conforming to backend RAG history contract.
+ */
+export function buildHistory(
+  messages: ChatMessage[],
+  currentAssistantId: string,
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  const history: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  const prior = messages.filter(
+    (m) =>
+      m.id !== currentAssistantId &&
+      (m.status === 'complete' || (m.status === 'streaming' && m.content.length > 0)) &&
+      m.content.trim().length > 0,
+  )
+
+  for (const m of prior.slice(-6)) {
+    history.push({
+      role: m.role,
+      content: m.content.slice(0, 1000),
+    })
+  }
+
+  let totalChars = history.reduce((acc, h) => acc + h.content.length, 0)
+  while (totalChars > 6000 && history.length > 1) {
+    const dropped = history.shift()
+    if (dropped) totalChars -= dropped.content.length
+  }
+
+  return history
+}
+
+/**
  * Runs one turn against the API and reports it through the reducer. Never
  * throws: every outcome is a dispatched action, which is what keeps the UI a
  * pure function of thread state.
@@ -85,21 +117,28 @@ async function run(tenantId: string, assistantId: string, query: string): Promis
   controller = new AbortController()
   const { signal } = controller
 
+  const currentMessages = useChatStore.getState().messages
+  const history = buildHistory(currentMessages, assistantId)
+
   try {
     if (streaming) {
       await streamQuery(
         tenantId,
-        { query, topK, signal },
+        { query, topK, history, signal },
         {
           onSources: ({ sources, chunksUsed }) =>
             dispatch({ type: 'SOURCES', id: assistantId, sources, chunksUsed }),
           onToken: (content) => enqueue(assistantId, content),
+          onIncomplete: () => {
+            flush(assistantId)
+            dispatch({ type: 'DONE', id: assistantId })
+          },
         },
       )
       flush(assistantId)
       dispatch({ type: 'DONE', id: assistantId })
     } else {
-      const result = await ask(tenantId, { query, topK, signal })
+      const result = await ask(tenantId, { query, topK, history, signal })
       dispatch({
         type: 'SOURCES',
         id: assistantId,

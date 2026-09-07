@@ -7,6 +7,7 @@ export {
   formatPercent,
   formatRelativeTime,
   initials,
+  isValidUuid,
   stripExtension,
   truncate,
 } from './format'

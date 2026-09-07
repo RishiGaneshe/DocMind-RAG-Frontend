@@ -15,15 +15,25 @@ import { sseChunkSchema, sseErrorSchema, sseSourcesSchema, type Source } from '.
 
 export interface StreamCallbacks {
   /** Fired once, before the first token — the sources panel renders early. */
-  onSources?: (payload: { sources: Source[]; query: string; chunksUsed: number }) => void
+  onSources?: (payload: {
+    sources: Source[]
+    query?: string
+    searchQuery?: string
+    rewritten?: boolean
+    chunksUsed: number
+  }) => void
   onToken: (content: string) => void
-  /** The backend sent `event: done`. Absent if the stream died mid-answer. */
+  /** The backend sent `event: done`. */
   onDone?: () => void
+  /** The stream ended before `done` arrived (e.g. dropped connection). */
+  onIncomplete?: () => void
 }
 
 export interface StreamInput {
   query: string
   topK?: number
+  documentIds?: string[]
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>
   signal?: AbortSignal
 }
 
@@ -38,14 +48,18 @@ function openStream(
   }
   if (token) headers.Authorization = `Bearer ${token}`
 
+  const body: Record<string, unknown> = {
+    query: input.query,
+    stream: true,
+  }
+  if (input.topK !== undefined) body.topK = input.topK
+  if (input.documentIds && input.documentIds.length > 0) body.documentIds = input.documentIds
+  if (input.history && input.history.length > 0) body.history = input.history
+
   return fetch(`${API_BASE_URL}/tenants/${tenantId}/query`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      query: input.query,
-      stream: true,
-      ...(input.topK === undefined ? {} : { topK: input.topK }),
-    }),
+    body: JSON.stringify(body),
     signal: input.signal,
   }).catch((error: unknown) => {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
@@ -97,7 +111,7 @@ export async function streamQuery(
 
   if (response.status === 401) {
     const payload = await response.json().catch(() => null)
-    const error = toApiError(401, payload)
+    const error = toApiError(401, payload, response.headers)
     if (error.code === 'TOKEN_REVOKED' || !tokenStorage.getRefreshToken()) {
       expireSession()
       throw error
@@ -113,7 +127,7 @@ export async function streamQuery(
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw toApiError(response.status, payload)
+    throw toApiError(response.status, payload, response.headers)
   }
 
   if (!response.body) {
@@ -124,9 +138,7 @@ export async function streamQuery(
   const reader = body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
-  // A holder, not a plain `let`: the assignment happens inside `handle`, and
-  // narrowing a captured `let` across a closure boundary is not something the
-  // compiler can follow.
+  let finished = false
   const failure: { error: ApiError | null } = { error: null }
 
   const handle = (frame: { event: string; data: string }): void => {
@@ -144,6 +156,8 @@ export async function streamQuery(
           callbacks.onSources?.({
             sources: parsed.data.sources,
             query: parsed.data.query,
+            searchQuery: parsed.data.searchQuery,
+            rewritten: parsed.data.rewritten,
             chunksUsed: parsed.data.chunksUsed ?? 0,
           })
         }
@@ -155,6 +169,7 @@ export async function streamQuery(
         return
       }
       case 'done': {
+        finished = true
         callbacks.onDone?.()
         return
       }
@@ -202,4 +217,7 @@ export async function streamQuery(
   }
 
   if (failure.error) throw failure.error
+  if (!finished && !input.signal?.aborted) {
+    callbacks.onIncomplete?.()
+  }
 }

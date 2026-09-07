@@ -48,29 +48,57 @@ export function UploadPanel({ onDone }: UploadPanelProps) {
   /* --- Result ------------------------------------------------------------ */
 
   if (result) {
-    const skipped = result.chunksSkipped > 0
-    const question = `Summarise ${stripExtension(result.filename)}`
+    const filename = result.filename || result.document?.filename || file?.name || 'Document'
+    const question = `Summarise ${stripExtension(filename)}`
+    const isDuplicate = Boolean(result.duplicate)
+    const isQueued = result.status === 'PENDING' || result.status === 'PROCESSING'
+    const skipped = (result.chunksSkipped ?? 0) > 0
 
     return (
       <div className="flex flex-col gap-4">
-        <Alert
-          tone={skipped ? 'warning' : 'success'}
-          icon={skipped ? <TriangleAlert className="size-4" /> : <CircleCheck className="size-4" />}
-          title={skipped ? 'Uploaded, with some passages skipped' : 'Ready to answer questions'}
-        >
-          <p>
-            <span className="font-medium text-fg">{result.filename}</span> was split into{' '}
-            {formatNumber(result.totalChunks)} passages;{' '}
-            {formatNumber(result.chunksProcessed)} were embedded
-            {result.pages ? ` from ${formatNumber(result.pages)} pages` : ''}.
-          </p>
-          {skipped && (
-            <p className="mt-1">
-              {formatNumber(result.chunksSkipped)} could not be embedded — usually scanned images or
-              pages with no extractable text. Those parts will not appear in answers.
+        {isDuplicate ? (
+          <Alert
+            tone="info"
+            icon={<CircleCheck className="size-4" />}
+            title="Already uploaded and indexed"
+          >
+            <p>
+              <span className="font-medium text-fg">{filename}</span> has already been indexed in your
+              workspace. Its vector passages are ready to answer questions.
             </p>
-          )}
-        </Alert>
+          </Alert>
+        ) : isQueued ? (
+          <Alert
+            tone="info"
+            icon={<CircleCheck className="size-4" />}
+            title="Upload accepted — processing queued"
+          >
+            <p>
+              <span className="font-medium text-fg">{filename}</span> was uploaded successfully.
+              {result.queuePosition !== undefined ? ` Queue position: ${result.queuePosition}.` : ''}{' '}
+              Background text extraction and vector embedding are in progress.
+            </p>
+          </Alert>
+        ) : (
+          <Alert
+            tone={skipped ? 'warning' : 'success'}
+            icon={skipped ? <TriangleAlert className="size-4" /> : <CircleCheck className="size-4" />}
+            title={skipped ? 'Uploaded, with some passages skipped' : 'Ready to answer questions'}
+          >
+            <p>
+              <span className="font-medium text-fg">{filename}</span> was split into{' '}
+              {formatNumber(result.totalChunks ?? 0)} passages;{' '}
+              {formatNumber(result.chunksProcessed ?? result.totalChunks ?? 0)} were embedded
+              {result.pages ? ` from ${formatNumber(result.pages)} pages` : ''}.
+            </p>
+            {skipped && (
+              <p className="mt-1">
+                {formatNumber(result.chunksSkipped ?? 0)} could not be embedded — usually scanned images or
+                pages with no extractable text. Those parts will not appear in answers.
+              </p>
+            )}
+          </Alert>
+        )}
 
         <div className="flex flex-wrap gap-2">
           <Button
@@ -92,6 +120,7 @@ export function UploadPanel({ onDone }: UploadPanelProps) {
       </div>
     )
   }
+
 
   /* --- Picker / progress ------------------------------------------------- */
 

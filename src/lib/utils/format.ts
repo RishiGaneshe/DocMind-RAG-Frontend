@@ -95,3 +95,10 @@ export function initials(first?: string | null, last?: string | null, email?: st
   if (joined) return joined
   return (email?.trim()?.[0] ?? '?').toUpperCase()
 }
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Validates if a string is a standard 36-character UUIDv4 / UUIDv7. */
+export function isValidUuid(value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value)
+}

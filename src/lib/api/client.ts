@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../constants'
 import { tokenStorage, type TokenPair } from '../tokenStorage'
-import { errorResponseSchema, refreshResponseSchema } from './types'
+import { refreshResponseSchema } from './types'
 import type { z } from 'zod'
 
 /**
@@ -15,13 +15,21 @@ export class ApiError extends Error {
   readonly status: number
   readonly code?: string
   readonly details?: unknown
+  readonly retryAfter: number | null
 
-  constructor(message: string, status: number, code?: string, details?: unknown) {
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    details?: unknown,
+    retryAfter: number | null = null,
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
     this.details = details
+    this.retryAfter = retryAfter
   }
 
   /** No response at all — offline, DNS failure, server down. */
@@ -31,6 +39,10 @@ export class ApiError extends Error {
 
   get isUnauthorized(): boolean {
     return this.status === 401
+  }
+
+  get isRateLimited(): boolean {
+    return this.status === 429
   }
 
   get isTenantRequired(): boolean {
@@ -74,7 +86,7 @@ async function performRefresh(): Promise<TokenPair> {
   })
 
   const payload = await readBody(response)
-  if (!response.ok) throw toApiError(response.status, payload)
+  if (!response.ok) throw toApiError(response.status, payload, response.headers)
 
   const parsed = refreshResponseSchema.safeParse(payload)
   if (!parsed.success) throw new ApiError('Malformed refresh response', 500, 'RESPONSE_SHAPE')
@@ -124,16 +136,79 @@ const STATUS_FALLBACKS: Record<number, string> = {
   500: 'Something went wrong on the server.',
   502: 'The answering service is unavailable right now.',
   503: 'The service is temporarily unavailable.',
+  504: 'The request timed out. Please try again.',
 }
 
-function toApiError(status: number, payload: unknown): ApiError {
-  const parsed = errorResponseSchema.safeParse(payload)
-  const message =
-    (parsed.success ? parsed.data.error : undefined) ??
-    (typeof payload === 'string' && payload.trim() ? payload.trim() : undefined) ??
-    STATUS_FALLBACKS[status] ??
-    'Request failed.'
-  return new ApiError(message, status, parsed.success ? parsed.data.code : undefined, payload)
+/**
+ * Turns any of the three server error shapes (or non-JSON HTML) into { message, code, retryAfter }.
+ *
+ * Shape A: Route handler rejected { success: false, error: "...", code: "..." }
+ * Shape B: Express pre-handler rejected { error: { message: "..." } } (413 or malformed JSON)
+ * Shape C: No route matched { error: "Not found", path: "..." } (404)
+ * Reverse proxy HTML: string / null
+ */
+export function normaliseError(
+  status: number,
+  body: unknown,
+  headers?: Headers,
+): { message: string; code?: string; retryAfter: number | null } {
+  let retryAfter =
+    (headers && typeof headers.get === 'function' ? Number(headers.get('Retry-After')) : null) ||
+    (body && typeof body === 'object' && 'retryAfterSeconds' in body
+      ? Number((body as { retryAfterSeconds?: unknown }).retryAfterSeconds)
+      : null) ||
+    null
+
+  // Shape B: Express pre-handler error where error is an object
+  if (
+    body &&
+    typeof body === 'object' &&
+    'error' in body &&
+    typeof (body as { error: unknown }).error === 'object' &&
+    (body as { error: unknown }).error !== null
+  ) {
+    const msg = (body as { error: { message?: string } }).error.message ?? 'Request failed'
+    return { message: msg, code: undefined, retryAfter }
+  }
+
+  // Shape A & C: Route rejection where error is a string
+  if (
+    body &&
+    typeof body === 'object' &&
+    'error' in body &&
+    typeof (body as { error: unknown }).error === 'string'
+  ) {
+    const errorStr = (body as { error: string }).error
+    const codeStr =
+      'code' in body && typeof (body as { code: unknown }).code === 'string'
+        ? (body as { code: string }).code
+        : undefined
+    return { message: errorStr, code: codeStr, retryAfter }
+  }
+
+  // Plain string or HTML response from proxy
+  if (typeof body === 'string' && body.trim()) {
+    // If it looks like HTML, use status fallback instead of dumping HTML into UI
+    if (body.trim().startsWith('<')) {
+      return {
+        message: STATUS_FALLBACKS[status] ?? `Service responded with status ${status}.`,
+        code: undefined,
+        retryAfter,
+      }
+    }
+    return { message: body.trim(), code: undefined, retryAfter }
+  }
+
+  return {
+    message: STATUS_FALLBACKS[status] ?? `Request failed with status ${status}.`,
+    code: undefined,
+    retryAfter,
+  }
+}
+
+export function toApiError(status: number, payload: unknown, headers?: Headers): ApiError {
+  const norm = normaliseError(status, payload, headers)
+  return new ApiError(norm.message, status, norm.code, payload, norm.retryAfter)
 }
 
 export interface RequestOptions<TSchema extends z.ZodType> {
@@ -182,7 +257,7 @@ export async function apiRequest<TSchema extends z.ZodType>(
   // /auth/login means bad credentials, not a stale token.
   if (response.status === 401 && !anonymous) {
     const payload = await readBody(response)
-    const error = toApiError(401, payload)
+    const error = toApiError(401, payload, response.headers)
 
     if (error.code === 'TOKEN_REVOKED' || !tokenStorage.getRefreshToken()) {
       expireSession()
@@ -199,7 +274,7 @@ export async function apiRequest<TSchema extends z.ZodType>(
   }
 
   const payload = await readBody(response)
-  if (!response.ok) throw toApiError(response.status, payload)
+  if (!response.ok) throw toApiError(response.status, payload, response.headers)
   if (!schema) return payload as z.infer<TSchema>
 
   const parsed = schema.safeParse(payload)
@@ -227,7 +302,4 @@ export function isAbortError(error: unknown): boolean {
 }
 
 /** Exposed for the SSE transport, which manages its own fetch. */
-export { refreshTokens, toApiError, expireSession }
-
-
-//
+export { refreshTokens, expireSession }

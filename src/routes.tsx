@@ -49,6 +49,7 @@ const AppNotFound = lazy(() => import('./pages/AppNotFound'))
 const Settings = lazy(() => import('./pages/Settings'))
 const SettingsWorkspace = lazy(() => import('./pages/SettingsWorkspace'))
 const SettingsApiKeys = lazy(() => import('./pages/SettingsApiKeys'))
+const SettingsWidget = lazy(() => import('./pages/SettingsWidget'))
 const SettingsMembers = lazy(() => import('./pages/SettingsMembers'))
 const SettingsAccount = lazy(() => import('./pages/SettingsAccount'))
 const Forbidden = lazy(() => import('./pages/Forbidden'))
@@ -185,6 +186,7 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="workspace" replace /> },
               { path: 'workspace', element: panePage(SettingsWorkspace) },
               { path: 'api-keys', element: panePage(SettingsApiKeys) },
+              { path: 'widget', element: panePage(SettingsWidget) },
               { path: 'members', element: panePage(SettingsMembers) },
               { path: 'account', element: panePage(SettingsAccount) },
             ],
