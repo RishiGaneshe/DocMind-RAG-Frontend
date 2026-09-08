@@ -67,7 +67,7 @@ export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_UR
 
 export const CHAT_PUBLIC_KEY =
   import.meta.env.VITE_CHAT_PUBLIC_KEY?.trim() ||
-  'pk_live_8YAWCBLPZseXaNIG1BJnql30-M3zr2CYOUGjhQWbldo'
+  'pk_live_yUC6ib29LRemN9Mq7TNo2NhB2yALG6SAN-RqdgRSMWI'
 
 export const NO_CONTEXT_ANSWER =
   'I could not find any relevant information in the uploaded documents to answer your question.'
