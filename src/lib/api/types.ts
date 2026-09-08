@@ -128,6 +128,17 @@ export const sourceSchema = z.object({
   snippet: z.string(),
 })
 
+export const publicSourceSchema = z.object({
+  citation: z.coerce.number(),
+  filename: z.string().optional(),
+  page: z.coerce.number().nullable().optional(),
+  documentId: z.string().optional(),
+  chunkIndex: z.coerce.number().optional(),
+  breadcrumb: z.string().nullable().optional(),
+  relevanceScore: z.coerce.number().optional(),
+  snippet: z.string().optional(),
+})
+
 export const queryResponseSchema = z.object({
   success: z.literal(true),
   answer: z.string(),
@@ -146,6 +157,11 @@ export const sseSourcesSchema = z.object({
   query: z.string().optional(),
   searchQuery: z.string().optional(),
   rewritten: z.boolean().optional(),
+  chunksUsed: z.coerce.number().optional(),
+})
+
+export const publicSseSourcesSchema = z.object({
+  sources: z.array(publicSourceSchema),
   chunksUsed: z.coerce.number().optional(),
 })
 
@@ -254,7 +270,7 @@ export const publicConfigResponseSchema = z.object({
 export const publicChatResponseSchema = z.object({
   success: z.literal(true),
   answer: z.string(),
-  sources: z.array(sourceSchema),
+  sources: z.array(publicSourceSchema),
   citedSources: z.array(z.coerce.number()).optional(),
   chunksUsed: z.coerce.number().optional(),
 })
@@ -277,6 +293,7 @@ export type DocumentDetailResponse = z.infer<typeof documentDetailResponseSchema
 export type DeleteDocumentResult = z.infer<typeof deleteDocumentResponseSchema>
 export type UploadResult = z.infer<typeof uploadResponseSchema>
 export type Source = z.infer<typeof sourceSchema>
+export type PublicSource = z.infer<typeof publicSourceSchema>
 export type QueryResult = z.infer<typeof queryResponseSchema>
 export type ApiKeyType = z.infer<typeof apiKeyTypeSchema>
 export type ApiKeyStatus = z.infer<typeof apiKeyStatusSchema>

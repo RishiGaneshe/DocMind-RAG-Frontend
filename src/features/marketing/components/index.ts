@@ -1,4 +1,5 @@
 export { Hero } from './Hero'
+export { ChatbotCallout } from './ChatbotCallout'
 export { LegalDoc, LegalSection } from './LegalDoc'
 export {
   Capabilities,

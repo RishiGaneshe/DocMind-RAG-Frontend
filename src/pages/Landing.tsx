@@ -1,5 +1,6 @@
 import {
   Capabilities,
+  ChatbotCallout,
   Faq,
   FinalCta,
   Hero,
@@ -8,6 +9,7 @@ import {
   UnderTheHood,
   Verifiable,
 } from '@/features/marketing/components'
+import { PublicChatWidget } from '@/components/widget/PublicChatWidget'
 import { useDocumentTitle } from '@/hooks'
 
 export default function LandingPage() {
@@ -16,6 +18,7 @@ export default function LandingPage() {
   return (
     <>
       <Hero />
+      <ChatbotCallout />
       <HowItWorks />
       <Capabilities />
       <Verifiable />
@@ -23,6 +26,7 @@ export default function LandingPage() {
       <UnderTheHood />
       <Faq />
       <FinalCta />
+      <PublicChatWidget />
     </>
   )
 }

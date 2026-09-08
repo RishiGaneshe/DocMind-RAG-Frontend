@@ -1,4 +1,4 @@
-import { ApiError, apiRequest } from './client'
+import { ApiError, apiRequest, toApiError } from './client'
 import { API_BASE_URL } from '../constants'
 import { isValidUuid } from '../utils'
 import {
@@ -296,7 +296,7 @@ export async function getPublicConfig(apiKey: string, signal?: AbortSignal): Pro
   })
   const body = await response.json().catch(() => null)
   if (!response.ok) {
-    throw new Error(body?.error || `Failed to fetch public config (${response.status})`)
+    throw toApiError(response.status, body, response.headers)
   }
   return publicConfigResponseSchema.parse(body)
 }
@@ -327,7 +327,7 @@ export async function sendPublicChat(
   })
   const body = await response.json().catch(() => null)
   if (!response.ok) {
-    throw new Error(body?.error || `Public chat failed (${response.status})`)
+    throw toApiError(response.status, body, response.headers)
   }
   return publicChatResponseSchema.parse(body)
 }

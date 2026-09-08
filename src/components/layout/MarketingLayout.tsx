@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
 
 const LINKS = [
+  { to: '/', label: 'Home' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/legal/privacy', label: 'Privacy' },
   { to: '/legal/terms', label: 'Terms' },
@@ -51,11 +52,12 @@ export function MarketingLayout() {
               <NavLink
                 key={link.to}
                 to={link.to}
+                end={link.to === '/'}
                 className={({ isActive }) =>
                   cn(
                     'rounded-md px-3 py-2 text-sm transition-colors duration-(--dur-fast)',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--border-focus)',
-                    isActive ? 'text-fg' : 'text-fg-secondary hover:text-fg',
+                    isActive ? 'text-fg font-medium' : 'text-fg-secondary hover:text-fg',
                   )
                 }
               >

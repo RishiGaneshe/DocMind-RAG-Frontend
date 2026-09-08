@@ -1,6 +1,13 @@
 export { ApiError, apiRequest, isAbortError, setSessionExpiredHandler, normaliseError } from './client'
 export * from './endpoints'
-export { streamQuery, type StreamCallbacks, type StreamInput } from './sse'
+export {
+  streamQuery,
+  streamPublicChat,
+  type StreamCallbacks,
+  type StreamInput,
+  type PublicStreamCallbacks,
+  type PublicStreamInput,
+} from './sse'
 export type {
   ApiKey,
   ApiKeyDefaults,
@@ -15,6 +22,7 @@ export type {
   DocumentStatus,
   PublicChatResult,
   PublicConfig,
+  PublicSource,
   QueryResult,
   Role,
   RotateApiKeyResult,

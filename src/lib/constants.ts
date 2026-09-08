@@ -63,6 +63,11 @@ function normalizeApiBaseUrl(raw?: string): string {
 
 export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
 
+// Workspace public key (pk_live_…) that authenticates the floating chat widget
+// on the marketing home. Publishable by design (see md_Files/INTEGRATION_GUIDE.md);
+// blank means the widget stays hidden.
+export const CHAT_PUBLIC_KEY = import.meta.env.VITE_CHAT_PUBLIC_KEY?.trim() || ''
+
 export const NO_CONTEXT_ANSWER =
   'I could not find any relevant information in the uploaded documents to answer your question.'
 
