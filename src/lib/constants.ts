@@ -55,7 +55,9 @@ export const FEATURES = {
 } as const
 
 function normalizeApiBaseUrl(raw?: string): string {
-  if (!raw || !raw.trim()) return '/api'
+  if (!raw || !raw.trim()) {
+    return import.meta.env.PROD ? 'https://api.codewithrishi.fun/api' : '/api'
+  }
   const trimmed = raw.trim().replace(/\/+$/, '')
   if (trimmed.endsWith('/api')) return trimmed
   return `${trimmed}/api`
@@ -63,10 +65,9 @@ function normalizeApiBaseUrl(raw?: string): string {
 
 export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
 
-// Workspace public key (pk_live_…) that authenticates the floating chat widget
-// on the marketing home. Publishable by design (see md_Files/INTEGRATION_GUIDE.md);
-// blank means the widget stays hidden.
-export const CHAT_PUBLIC_KEY = import.meta.env.VITE_CHAT_PUBLIC_KEY?.trim() || ''
+export const CHAT_PUBLIC_KEY =
+  import.meta.env.VITE_CHAT_PUBLIC_KEY?.trim() ||
+  'pk_live_8YAWCBLPZseXaNIG1BJnql30-M3zr2CYOUGjhQWbldo'
 
 export const NO_CONTEXT_ANSWER =
   'I could not find any relevant information in the uploaded documents to answer your question.'
