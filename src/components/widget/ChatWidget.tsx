@@ -3,6 +3,8 @@ import {
   Bot,
   ChevronRight,
   Clock,
+  Maximize2,
+  Minimize2,
   RotateCcw,
   Send,
   Sparkles,
@@ -90,6 +92,7 @@ export function ChatWidget({
   const maxHistoryTurns = limits?.maxHistoryTurns ?? 6
 
   const [isOpen, setIsOpen] = useState(initiallyOpen)
+  const [isMaximized, setIsMaximized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'greeting',
@@ -219,6 +222,7 @@ export function ChatWidget({
   const handleClose = () => {
     abortRef.current?.abort()
     setIsOpen(false)
+    setIsMaximized(false)
     onClose?.()
   }
 
@@ -478,7 +482,7 @@ export function ChatWidget({
   return (
     <div
       className={cn(
-        embedded ? 'relative h-full w-full' : 'fixed z-50',
+        embedded ? 'relative h-full w-full' : 'fixed z-[100]',
         !embedded && (position === 'left' ? 'bottom-5 left-5' : 'bottom-5 right-5'),
         className,
       )}
@@ -525,14 +529,19 @@ export function ChatWidget({
           role="dialog"
           aria-label={title}
           className={cn(
-            'flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-fg shadow-2xl shadow-black/15 dark:shadow-black/70 backdrop-blur-2xl transition-colors duration-200',
-            embedded
-              ? 'h-full w-full border-0 shadow-none'
-              : cn(
-                  'w-[calc(100vw-2rem)] sm:w-[410px] h-[580px] max-h-[calc(100vh-5.5rem)]',
-                  position === 'left' ? 'origin-bottom-left' : 'origin-bottom-right',
-                  'animate-in fade-in zoom-in-95 duration-200',
-                ),
+            'flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-fg shadow-2xl shadow-black/15 dark:shadow-black/70 backdrop-blur-2xl transition-all duration-500 ease-out',
+            embedded ? 'h-full w-full border-0 shadow-none' : 'fixed',
+            !embedded && isMaximized && (
+              position === 'left'
+                ? 'left-1/2 bottom-1/2 w-[95vw] sm:w-[85vw] max-w-[1000px] h-[90vh] sm:h-[85vh] -translate-x-1/2 translate-y-1/2'
+                : 'right-1/2 bottom-1/2 w-[95vw] sm:w-[85vw] max-w-[1000px] h-[90vh] sm:h-[85vh] translate-x-1/2 translate-y-1/2'
+            ),
+            !embedded && !isMaximized && (
+              position === 'left'
+                ? 'left-5 bottom-5 w-[calc(100vw-2rem)] sm:w-[410px] h-[580px] max-h-[calc(100vh-5.5rem)] translate-x-0 translate-y-0 origin-bottom-left'
+                : 'right-5 bottom-5 w-[calc(100vw-2rem)] sm:w-[410px] h-[580px] max-h-[calc(100vh-5.5rem)] translate-x-0 translate-y-0 origin-bottom-right'
+            ),
+            !embedded && !isMaximized && 'animate-in fade-in zoom-in-95 duration-300',
           )}
         >
           {/* Modern Theme Header */}
@@ -565,6 +574,17 @@ export function ChatWidget({
               >
                 <RotateCcw className="size-3.5" />
               </button>
+              {!embedded && (
+                <button
+                  type="button"
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  title={isMaximized ? 'Minimize chat' : 'Maximize chat'}
+                  aria-label={isMaximized ? 'Minimize chat' : 'Maximize chat'}
+                  className="grid size-8 place-items-center rounded-lg text-fg-muted transition-all hover:bg-surface-raised hover:text-fg active:scale-95 cursor-pointer"
+                >
+                  {isMaximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+                </button>
+              )}
               {/* Single clean close button */}
               {!embedded && (
                 <button
@@ -624,16 +644,17 @@ export function ChatWidget({
                 >
                   <div
                     className={cn(
-                      'max-w-[88%] rounded-2xl px-4 py-3 leading-relaxed text-sm shadow-xs',
+                      'rounded-2xl px-4 py-3 leading-relaxed text-sm shadow-xs',
+                      isMaximized ? 'max-w-[95%] lg:max-w-[800px]' : 'max-w-[88%]',
                       isBot
                         ? 'rounded-tl-xs border border-line bg-surface text-fg backdrop-blur-xs'
                         : 'rounded-tr-xs bg-accent text-on-accent font-medium shadow-xs',
                     )}
                   >
                     {isBot ? (
-                      <div>
+                      <div className="w-full min-w-0">
                         {hasText ? (
-                          <div className="prose-chat text-fg">
+                          <div className="prose-chat text-fg break-words">
                             <Markdown content={msg.content} />
                             {isStreaming && <StreamingCursor />}
                           </div>
